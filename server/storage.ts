@@ -120,6 +120,7 @@ export class MemStorage implements IStorage {
     const driver: Driver = {
       ...insertDriver,
       id,
+      avatarUrl: insertDriver.avatarUrl ?? null,
       level: insertDriver.level || "Rookie",
       totalPoints: insertDriver.totalPoints || 0,
       currentStreak: insertDriver.currentStreak || 0,
@@ -426,19 +427,43 @@ export class MemStorage implements IStorage {
       { name: "₹1000 Fuel Voucher", description: "Valid at all HP pumps", pointCost: 1000, category: "fuel", value: 1000, imageUrl: null },
     ];
     voucherData.forEach((v) => {
-      const voucher = { ...v, id: randomUUID() };
+      const voucher = { ...v, id: randomUUID(), imageUrl: v.imageUrl ?? null };
       this.vouchers.set(voucher.id, voucher);
     });
 
     // Seed nearby places
     const placeData: InsertNearbyPlace[] = [
       { name: "Highway Dhaba", category: "dhaba", latitude: 19.0760, longitude: 72.8777, address: "NH-48, Mumbai", isVeg: true, isNonVeg: true, hasTruckParking: true, hygieneRating: 5, isOpen: true, discount: 10, imageUrl: null, verifiedBy: null },
+      { name: "Punjabi Tadka Dhaba", category: "dhaba", latitude: 19.1200, longitude: 72.9100, address: "NH-48, Thane", isVeg: true, isNonVeg: true, hasTruckParking: true, hygieneRating: 4, isOpen: true, discount: 15, imageUrl: null, verifiedBy: null },
+      { name: "Amritsar Dhaba", category: "dhaba", latitude: 19.0500, longitude: 72.8300, address: "Mumbai-Pune Highway", isVeg: false, isNonVeg: true, hasTruckParking: true, hygieneRating: 5, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Rajdhani Pure Veg", category: "dhaba", latitude: 19.1500, longitude: 72.9500, address: "NH-48, Kalyan", isVeg: true, isNonVeg: false, hasTruckParking: true, hygieneRating: 5, isOpen: true, discount: 20, imageUrl: null, verifiedBy: null },
+      { name: "Sankalp Restaurant", category: "dhaba", latitude: 19.0300, longitude: 72.8100, address: "Western Highway", isVeg: true, isNonVeg: false, hasTruckParking: false, hygieneRating: 4, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
       { name: "HP Petrol Pump", category: "fuel", latitude: 19.0850, longitude: 72.8950, address: "Western Express Highway", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: 5, imageUrl: null, verifiedBy: null },
+      { name: "Indian Oil Pump", category: "fuel", latitude: 19.1100, longitude: 72.9200, address: "NH-48, Thane East", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Bharat Petroleum", category: "fuel", latitude: 19.0400, longitude: 72.8400, address: "Mumbai-Pune Expressway", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: 10, imageUrl: null, verifiedBy: null },
+      { name: "Shell Fuel Station", category: "fuel", latitude: 19.1600, longitude: 72.9600, address: "Eastern Express Highway", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
       { name: "Quick Fix Auto Repair", category: "mechanic", latitude: 19.0650, longitude: 72.8650, address: "Industrial Area, Mumbai", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "24x7 Truck Service", category: "mechanic", latitude: 19.1300, longitude: 72.9300, address: "Thane-Belapur Road", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: 15, imageUrl: null, verifiedBy: null },
+      { name: "Highway Motors", category: "mechanic", latitude: 19.0200, longitude: 72.8000, address: "NH-48, Borivali", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Tyre World & Service", category: "mechanic", latitude: 19.1700, longitude: 72.9700, address: "Kalyan-Shilphata Road", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: 20, imageUrl: null, verifiedBy: null },
       { name: "Truck Parking Zone A", category: "parking", latitude: 19.0900, longitude: 72.9000, address: "Logistics Hub, Mumbai", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Safe Park Truck Zone", category: "parking", latitude: 19.1400, longitude: 72.9400, address: "Industrial Estate, Thane", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Night Parking Hub", category: "parking", latitude: 19.0100, longitude: 72.7900, address: "NH-48, Dahisar", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
     ];
     placeData.forEach((p) => {
-      const place = { ...p, id: randomUUID() };
+      const place = { 
+        ...p, 
+        id: randomUUID(), 
+        createdAt: new Date(),
+        imageUrl: p.imageUrl ?? null,
+        verifiedBy: p.verifiedBy ?? null,
+        hygieneRating: p.hygieneRating ?? null,
+        discount: p.discount ?? null,
+        isVeg: p.isVeg ?? null,
+        isNonVeg: p.isNonVeg ?? null,
+        hasTruckParking: p.hasTruckParking ?? null,
+        isOpen: p.isOpen ?? true
+      };
       this.nearbyPlaces.set(place.id, place);
     });
 

@@ -52,6 +52,30 @@ export default function Wellness() {
       icon: Footprints,
       color: "bg-pink-500",
     },
+    {
+      id: 7,
+      title: "Quality Sleep is Essential",
+      content: "Aim for 7-8 hours of sleep before long trips. Never drive when drowsy. If you feel sleepy, pull over safely and rest.",
+      category: "safety",
+      icon: Heart,
+      color: "bg-indigo-500",
+    },
+    {
+      id: 8,
+      title: "Monitor Your Health",
+      content: "Regular health checkups are crucial. Monitor blood pressure, sugar levels, and overall fitness. Keep emergency medications handy.",
+      category: "health",
+      icon: Activity,
+      color: "bg-red-500",
+    },
+    {
+      id: 9,
+      title: "Mind Your Mental Health",
+      content: "Long drives can be mentally exhausting. Listen to music, podcasts, or audiobooks. Stay connected with family through calls during breaks.",
+      category: "health",
+      icon: Heart,
+      color: "bg-rose-500",
+    },
   ];
 
   const reminders = [
@@ -67,6 +91,7 @@ export default function Wellness() {
           <Heart className="w-16 h-16 text-pink-500 mx-auto mb-4" />
           <h1 className="text-3xl font-bold">Driver Wellness</h1>
           <p className="text-muted-foreground">Take care of yourself on the road</p>
+          <p className="text-xs text-muted-foreground/60 mt-2">Health tips powered by taabi.ai</p>
         </div>
       </div>
 

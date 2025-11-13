@@ -34,6 +34,7 @@ export default function NearbyEssentials() {
           <MapPin className="w-16 h-16 text-taabi-blue mx-auto mb-4" />
           <h1 className="text-2xl font-bold">Nearby Essentials</h1>
           <p className="text-muted-foreground">Find what you need along your route</p>
+          <p className="text-xs text-muted-foreground/60 mt-2">Powered by taabi.ai location services</p>
         </div>
       </div>
 

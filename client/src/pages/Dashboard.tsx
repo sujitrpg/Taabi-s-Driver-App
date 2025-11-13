@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PointsWallet } from "@/components/PointsWallet";
 import { ScoreCard } from "@/components/ScoreCard";
 import { ProgressRing } from "@/components/ProgressRing";
@@ -6,11 +7,25 @@ import { LeaderboardItem } from "@/components/LeaderboardItem";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Map, MapPin, Gift, Users, TrendingUp, Award } from "lucide-react";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Map, MapPin, Gift, Users, TrendingUp, Award, AlertTriangle, Phone } from "lucide-react";
 import { useLocation } from "wouter";
+import { useToast } from "@/hooks/use-toast";
+import shubhamImage from "@/assets/images/shubham.jpeg";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
+  const [sosDialogOpen, setSosDialogOpen] = useState(false);
+  const { toast } = useToast();
 
   const quickActions = [
     { icon: Map, label: "Start Route", path: "/route", color: "bg-taabi-blue text-white" },
@@ -28,10 +43,23 @@ export default function Dashboard() {
   ];
 
   const topDrivers = [
-    { rank: 1, name: "Sujit Soni", score: 98, points: 2450, avatarUrl: undefined, level: "Fleet Legend" },
-    { rank: 2, name: "Shubham Agarwal", score: 95, points: 2380, avatarUrl: undefined, level: "Pro Driver" },
-    { rank: 3, name: "Sumandeep Singh", score: 92, points: 2250, avatarUrl: undefined, level: "Pro Driver" },
+    { rank: 1, name: "Sujit Soni", score: 98, points: 3450, avatarUrl: undefined, level: "Fleet Legend" },
+    { rank: 2, name: "Shubham Agarwal", score: 95, points: 3200, avatarUrl: shubhamImage, level: "Pro Driver" },
+    { rank: 3, name: "Sumandeep Singh", score: 92, points: 2980, avatarUrl: undefined, level: "Pro Driver" },
   ];
+
+  const handleSOS = () => {
+    setSosDialogOpen(true);
+  };
+
+  const handleConfirmSOS = () => {
+    setSosDialogOpen(false);
+    toast({
+      title: "SOS Alert Sent!",
+      description: "Emergency services notified. Help is on the way. Hotline: 1800-TAABI-SOS",
+      duration: 10000,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -40,10 +68,22 @@ export default function Dashboard() {
           <div>
             <h1 className="text-3xl font-bold">Welcome Back Prakhar!</h1>
             <p className="text-muted-foreground">Let's make today count</p>
+            <p className="text-xs text-muted-foreground/60 mt-1">Powered by taabi.ai</p>
           </div>
-          <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-lime-green/20 border border-lime-green/30">
-            <TrendingUp className="w-4 h-4 text-lime-green" />
-            <span className="text-sm font-semibold text-lime-green">Day 12 Streak</span>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-lime-green/20 border border-lime-green/30">
+              <TrendingUp className="w-4 h-4 text-lime-green" />
+              <span className="text-sm font-semibold text-lime-green">Day 12 Streak</span>
+            </div>
+            <Button 
+              size="sm" 
+              className="bg-red-600 hover:bg-red-700 text-white gap-2"
+              onClick={handleSOS}
+              data-testid="button-sos"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              SOS
+            </Button>
           </div>
         </div>
 
@@ -118,6 +158,36 @@ export default function Dashboard() {
             ))}
           </Card>
         </div>
+
+        <AlertDialog open={sosDialogOpen} onOpenChange={setSosDialogOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center gap-2 text-red-600">
+                <AlertTriangle className="w-5 h-5" />
+                Emergency SOS Alert
+              </AlertDialogTitle>
+              <AlertDialogDescription className="space-y-3">
+                <p>This will immediately notify:</p>
+                <ul className="list-disc list-inside space-y-1 text-sm">
+                  <li>Your fleet manager</li>
+                  <li>Emergency services</li>
+                  <li>Nearest support team</li>
+                </ul>
+                <p className="font-semibold">Are you sure you want to send an SOS?</p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={handleConfirmSOS}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Send SOS
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

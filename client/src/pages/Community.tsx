@@ -10,8 +10,16 @@ import { useCommunityPosts, useCreatePost, useLikePost } from "@/lib/hooks/useCo
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { formatDistanceToNow } from "date-fns";
+import prakharImage from "@/assets/images/prakhar.jpeg";
+import shubhamImage from "@/assets/images/shubham.jpeg";
 
 const CURRENT_DRIVER_ID = "default-driver-1";
+
+const driverAvatars: Record<string, string> = {
+  "driver-3": shubhamImage,
+  "driver-2": prakharImage,
+  "default-driver-1": prakharImage
+};
 
 export default function Community() {
   const [newPost, setNewPost] = useState("");
@@ -70,6 +78,7 @@ export default function Community() {
           <Users className="w-16 h-16 text-purple-500 mx-auto mb-4" />
           <h1 className="text-3xl font-bold">Community</h1>
           <p className="text-muted-foreground">Share, learn, and connect</p>
+          <p className="text-xs text-muted-foreground/60 mt-2">Community powered by taabi.ai</p>
         </div>
       </div>
 
@@ -79,7 +88,8 @@ export default function Community() {
             <Card className="p-4 hover-elevate cursor-pointer" data-testid="button-create-post">
               <div className="flex items-center gap-3">
                 <Avatar className="w-10 h-10">
-                  <AvatarFallback>DY</AvatarFallback>
+                  <AvatarImage src={prakharImage} alt="Prakhar" />
+                  <AvatarFallback>PR</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 text-muted-foreground">
                   Share your story or tips...
@@ -154,11 +164,13 @@ export default function Community() {
               ))}
             </>
           ) : (
-            posts?.map((post) => (
+            posts?.map((post) => {
+              const avatarUrl = driverAvatars[post.driverId] || post.driver.avatarUrl || undefined;
+              return (
               <Card key={post.id} className="p-6" data-testid={`card-post-${post.id}`}>
                 <div className="flex gap-4 mb-4">
                   <Avatar className="w-12 h-12">
-                    <AvatarImage src={post.driver.avatarUrl || undefined} />
+                    <AvatarImage src={avatarUrl} />
                     <AvatarFallback>{post.driver.name.charAt(0)}</AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
@@ -202,7 +214,8 @@ export default function Community() {
                   </Button>
                 </div>
               </Card>
-            ))
+            );
+            })
           )}
         </div>
       </div>

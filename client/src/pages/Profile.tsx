@@ -17,12 +17,14 @@ import {
   Heart,
   Zap
 } from "lucide-react";
+import prakharImage from "@/assets/images/prakhar.jpeg";
+import coverImage from "@assets/generated_images/Truck_driver_dashboard_cover_c6ffea8a.png";
 
 export default function Profile() {
   const driver = {
     name: "Prakhar Raghuvansh",
     phoneNumber: "+91 9006488711",
-    avatarUrl: "/profile-pic.jpeg",
+    avatarUrl: prakharImage,
     level: "Pro Driver",
     totalPoints: 2450,
     currentStreak: 12,
@@ -54,11 +56,20 @@ export default function Profile() {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="relative h-[25vh] bg-gradient-to-br from-taabi-blue to-taabi-blue/80 flex items-center justify-center">
+      <div className="relative h-[25vh] overflow-hidden">
+        <img 
+          src={coverImage} 
+          alt="Profile Cover" 
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/60" />
         <div className="absolute top-4 right-4">
-          <Button variant="ghost" size="icon" className="text-white" data-testid="button-settings">
+          <Button variant="ghost" size="icon" className="text-white hover:bg-white/20" data-testid="button-settings">
             <Settings className="w-5 h-5" />
           </Button>
+        </div>
+        <div className="absolute bottom-4 left-4 text-white">
+          <p className="text-sm opacity-80">Powered by taabi.ai</p>
         </div>
       </div>
 

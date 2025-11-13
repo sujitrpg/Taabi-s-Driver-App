@@ -6,15 +6,16 @@ import { Trophy, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLeaderboard, useDriverRank } from "@/lib/hooks/useDriver";
 import { Skeleton } from "@/components/ui/skeleton";
+import prakharImage from "@/assets/images/prakhar.jpeg";
+import shubhamImage from "@/assets/images/shubham.jpeg";
 
 type Period = "daily" | "weekly" | "monthly";
 
 const CURRENT_DRIVER_ID = "default-driver-1";
 
-// Add avatar URLs for specific drivers
 const driverAvatars: Record<string, string> = {
-  "driver-3": "/shubham-profile.jpeg",
-  "driver-1": "/profile-pic.jpeg"
+  "driver-3": shubhamImage,
+  "default-driver-1": prakharImage
 };
 
 export default function Leaderboard() {
@@ -42,6 +43,7 @@ export default function Leaderboard() {
           <Trophy className="w-16 h-16 text-yellow-500 mx-auto mb-4" />
           <h1 className="text-3xl font-bold">Leaderboard</h1>
           <p className="text-muted-foreground">Compete with the best drivers</p>
+          <p className="text-xs text-muted-foreground/60 mt-2">Rankings powered by taabi.ai</p>
         </div>
       </div>
 
