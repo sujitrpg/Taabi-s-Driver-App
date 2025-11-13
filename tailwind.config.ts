@@ -11,6 +11,12 @@ export default {
         sm: ".1875rem", /* 3px */
       },
       colors: {
+        // Taabi Drive+ Brand Colors
+        "taabi-blue": "#0072CE",
+        "lime-green": "#84CC16",
+        "grade-a": "#22C55E",
+        "grade-b": "#F59E0B",
+        "grade-c": "#EF4444",
         // Flat / base colors (regular buttons)
         background: "hsl(var(--background) / <alpha-value>)",
         foreground: "hsl(var(--foreground) / <alpha-value>)",
