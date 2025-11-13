@@ -22,6 +22,7 @@ export default function Profile() {
   const driver = {
     name: "Prakhar Raghuvansh",
     phoneNumber: "+91 9006488711",
+    avatarUrl: "/profile-pic.jpeg",
     level: "Pro Driver",
     totalPoints: 2450,
     currentStreak: 12,
@@ -65,6 +66,7 @@ export default function Profile() {
         <Card className="p-6">
           <div className="flex flex-col items-center -mt-20 mb-4">
             <Avatar className="w-32 h-32 border-4 border-background shadow-lg">
+              <AvatarImage src={driver.avatarUrl} alt={driver.name} />
               <AvatarFallback className="text-4xl bg-taabi-blue text-white">
                 {driver.name.charAt(0)}
               </AvatarFallback>
