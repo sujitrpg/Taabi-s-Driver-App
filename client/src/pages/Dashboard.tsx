@@ -28,9 +28,9 @@ export default function Dashboard() {
   ];
 
   const topDrivers = [
-    { rank: 1, name: "Sujit Soni", score: 98, points: 2450, avatarUrl: undefined },
-    { rank: 2, name: "Shubham Agarwal", score: 95, points: 2380, avatarUrl: "/shubham-profile.jpeg" },
-    { rank: 3, name: "Sumandeep Singh", score: 92, points: 2250, avatarUrl: undefined },
+    { rank: 1, name: "Sujit Soni", score: 98, points: 2450, avatarUrl: undefined, level: "Gold Driver" },
+    { rank: 2, name: "Shubham Agarwal", score: 95, points: 2380, avatarUrl: "/shubham-profile.jpeg", level: "Gold Driver" },
+    { rank: 3, name: "Sumandeep Singh", score: 92, points: 2250, avatarUrl: undefined, level: "Silver Driver" },
   ];
 
   return (
