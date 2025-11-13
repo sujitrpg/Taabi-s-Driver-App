@@ -1,0 +1,222 @@
+Prompt for Replit AI Agent**
+
+
+---
+
+**Prompt:**
+
+You are an expert full-stack developer.
+Build a **Driver Companion Mobile App called “Taabi Drive+”** for the **trucking and logistics industry**, focused on **driver empowerment, gamification, and efficiency**.
+
+---
+
+### 🌐 TECH STACK
+
+* Frontend: **React Native + Tailwind CSS + Expo**
+* Backend: **Node.js + Express**
+* Database: **MongoDB (via Mongoose)**
+* Authentication: **JWT + Firebase (for OTP login and face ID storage)**
+* APIs: **Google Maps API (routes, nearby places, ETA), Taabi Fleet API (if connected), OpenWeather API**
+* Optional: **Socket.IO** for real-time driver tracking and chat
+
+---
+
+### 🎯 APP OVERVIEW
+
+“Taabi Drive+” is a **Driver Companion App** designed to make truck drivers’ lives easier, safer, and more rewarding.
+It should combine **driver analytics, gamification, and community features** with **route optimization** and **incentivization**.
+
+---
+
+### 🔧 CORE FEATURES (DO NOT MISS ANY)
+
+#### 1. **Driver Scorecard & Analytics Dashboard**
+
+* Show performance metrics like:
+
+  * Fuel efficiency, idling %, harsh braking, route adherence.
+* Display a **daily/weekly scorecard** with color-coded grades (A/B/C).
+* **Leaderboard** to compare across the fleet.
+* **AI Tips Section:** personalized driving improvement suggestions.
+* **Badges:** Safety Star, Eco Driver, On-Time Hero.
+* Graphs for trends (last 7 days driving performance).
+
+---
+
+#### 2. **ETA & Route Optimization**
+
+* Map-based route planner using Google Maps API.
+* Show **ETA**, **distance**, and **alternate routes**.
+* Support **multi-point origin/delivery** optimization.
+* Smart constraints:
+
+  * Deliver certain stops within 3 hours.
+  * Serve high-priority locations first.
+* Real-time rerouting and **traffic delay alerts**.
+
+---
+
+#### 3. **Nearby Essentials (Dhabas, Fuel, Mechanics, Parking)**
+
+* Map layer showing:
+
+  * Dhabas (food stops), fuel stations, repair shops, safe parking.
+* **Filter options:** Open now, Veg/Non-Veg, Hygiene rated, Truck parking available.
+* **Discount feature:** drivers can scan QR codes at partnered dhabas for Taabi discounts.
+* **Community contribution:** drivers can add verified new stops with photo + details.
+
+---
+
+#### 4. **Nearby Drivers & Assistance**
+
+* Live map showing **drivers within 10 km**.
+* Tap to **chat or call** nearby drivers (Socket.IO chat).
+* **SOS feature:** send live location & alert to nearby drivers in emergencies.
+* **Relay feature:** drivers can hand over or coordinate trips.
+
+---
+
+#### 5. **Incentivization & Gamification Engine**
+
+* **Taabi Points System:**
+
+  * +50 points for on-time delivery
+  * +20 points for good driving score
+  * +10 for community contributions
+* **Redeem Points:** fuel, food, or recharge vouchers.
+* **Levels:** Rookie → Pro Driver → Fleet Legend.
+* **Weekly Challenges:** “No Harsh Braking Week”, “Fuel Saver of the Month”.
+* **Streak Rewards** for consistent performance.
+
+---
+
+#### 6. **Driver Identification System**
+
+* Multiple authentication modes:
+
+  * **Face recognition** (using Firebase ML)
+  * **QR Code scan** for vehicle-driver mapping
+  * **Phone number OTP**
+* Automatically link trip data to authenticated driver.
+* Store all verified IDs securely in MongoDB.
+
+---
+
+#### 7. **Driver Wellness & Community**
+
+* **Health Tips Section:** reminders for breaks, posture, hydration.
+* **Community Forum:** drivers can post photos, trip stories, tips.
+* **Learning Hub:** short video tutorials (defensive driving, maintenance).
+* **Recognition Zone:** monthly “Top 10 Drivers” highlight.
+
+---
+
+#### 8. **Alerts & Smart Notifications**
+
+* Non-intrusive notifications for:
+
+  * “Take a 15-min break.”
+  * “Traffic congestion ahead.”
+  * “Nearest safe parking: 5 km.”
+  * “Congrats! 100 km safe drive streak 🎉.”
+* Support **push notifications + voice assistant alerts**.
+
+---
+
+### 🧭 DRIVER LIFECYCLE WORKFLOW
+
+1. **Onboarding:**
+
+   * OTP Login → Face/QR verification → Tutorial walkthrough.
+2. **Pre-Trip:**
+
+   * Driver checks vehicle health (DTCs), selects route.
+3. **En Route:**
+
+   * Navigation with ETA, AI co-pilot voice guidance.
+   * Real-time scoring updates (fuel, braking, speed).
+   * Dhaba & fuel offers displayed dynamically.
+4. **Post-Trip:**
+
+   * Trip summary + scorecard + leaderboard update.
+   * Driver gets Taabi Points and reward badges.
+
+---
+
+### 🧠 BACKEND LOGIC
+
+* RESTful APIs:
+
+  * `/auth/login`, `/auth/verify`
+  * `/driver/score`, `/driver/rank`
+  * `/route/optimize`, `/route/eta`
+  * `/rewards/points`, `/rewards/redeem`
+  * `/community/posts`
+* Points logic implemented as middleware.
+* Leaderboard auto-refreshes daily using CRON job.
+* WebSocket events for live tracking + SOS.
+* MongoDB collections:
+
+  * Drivers, Trips, Rewards, Scorecards, CommunityPosts, Dhabas, VehicleData.
+
+---
+
+### 💎 REWARD SYSTEM LOGIC
+
+| Action                  | Points | Badge           |
+| ----------------------- | ------ | --------------- |
+| On-time delivery        | 50     | On-Time Hero    |
+| Zero harsh braking trip | 20     | Safety Star     |
+| Added verified dhaba    | 10     | Contributor     |
+| 7-day safe streak       | 100    | Gold Driver     |
+| Top 10 weekly           | 200    | Fleet Legend    |
+| Referral                | 50     | Community Champ |
+
+Redeem system:
+
+* Rewards catalog linked to vouchers table.
+* Drivers can redeem points → digital code → QR redemption at partner dhabas/fuel stations.
+
+---
+
+### 🔮 FUTURE ADD-ONS (Add as placeholders now)
+
+* AR Navigation overlay (future module)
+* Regional language voice assistant (Hindi, Tamil, etc.)
+* Integration with wearables for fatigue tracking.
+* Micro-insurance dashboard based on driver score.
+
+---
+
+### 🎨 UI DESIGN GUIDELINES
+
+* Color palette: Taabi Blue (#0072CE), White, Light Grey, Lime Green for rewards.
+* Use **cards** for sections, rounded edges (2xl), shadows, and icons from **Lucide** or **HeroIcons**.
+* Dashboard-style home screen with:
+
+  * Scorecard summary
+  * Taabi Points wallet
+  * Quick access buttons: Route | Nearby | Community | Rewards
+* Animated progress rings for scores (fuel, safety, efficiency).
+* Gamified confetti animations when driver wins badges or completes milestones.
+
+---
+
+### ✅ DELIVERABLES EXPECTED
+
+* Fully functional React Native front-end app
+* Node.js + MongoDB backend with all API routes
+* Authentication + Face/QR login
+* Gamification & points system logic
+* Google Maps integration with ETA + multi-point route planning
+* Driver leaderboard, community, and rewards modules
+* Dashboard + detailed trip summary UI
+* Notifications and AI tip system
+
+---
+
+**Make sure all 8 modules and all sub-features are implemented.
+No core feature should be skipped or simplified.
+Prioritize intuitive UI, smooth animations, and offline-first functionality.**
+
+
