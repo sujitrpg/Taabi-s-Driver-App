@@ -14,10 +14,12 @@ export default function Login() {
   const [, setLocation] = useLocation();
 
   const handleLogin = () => {
-    if (username === "prakhar" && password === "taabi") {
+    if (username && password) {
+      localStorage.setItem("isAuthenticated", "true");
+      localStorage.setItem("username", username);
       setLocation("/");
     } else {
-      setError("Invalid username or password");
+      setError("Please enter both username and password");
     }
   };
 
