@@ -1,7 +1,17 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertDriverSchema, insertTripSchema, insertCommunityPostSchema, insertNearbyPlaceSchema, insertRouteSchema } from "@shared/schema";
+import { 
+  insertDriverSchema, 
+  insertTripSchema, 
+  insertCommunityPostSchema, 
+  insertNearbyPlaceSchema, 
+  insertRouteSchema,
+  insertFatigueCheckInSchema,
+  insertRoadAlertSchema,
+  insertVideoCompletionSchema,
+  insertChecklistCompletionSchema
+} from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // ============ AUTHENTICATION ============
@@ -436,6 +446,189 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const routes = await storage.getRoutesByDriver(req.params.driverId);
       res.json(routes);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============ SUPPORT RESOURCES ============
+  app.get("/api/support-resources", async (req, res) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const resources = category 
+        ? await storage.getSupportResourcesByCategory(category)
+        : await storage.getAllSupportResources();
+      res.json(resources);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============ FATIGUE CHECK-INS ============
+  app.post("/api/fatigue-checkins", async (req, res) => {
+    try {
+      const validatedData = insertFatigueCheckInSchema.parse(req.body);
+      const checkIn = await storage.createFatigueCheckIn(validatedData);
+      
+      // If driver is sleepy, we could recommend nearby parking/dhaba
+      if (checkIn.feelingSleepy) {
+        const nearbyParking = await storage.getNearbyPlacesByCategory("parking");
+        const nearbyDhabas = await storage.getNearbyPlacesByCategory("dhaba");
+        const recommendations = [...nearbyParking.slice(0, 2), ...nearbyDhabas.slice(0, 2)];
+        
+        res.json({ 
+          checkIn, 
+          recommendations,
+          warning: "Please take a break soon. Safety first!" 
+        });
+      } else {
+        res.json({ checkIn });
+      }
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/fatigue-checkins/driver/:driverId", async (req, res) => {
+    try {
+      const checkIns = await storage.getFatigueCheckInsByDriver(req.params.driverId);
+      res.json(checkIns);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/fatigue-checkins/driver/:driverId/latest", async (req, res) => {
+    try {
+      const checkIn = await storage.getLatestFatigueCheckIn(req.params.driverId);
+      res.json(checkIn || null);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============ ROAD ALERTS ============
+  app.get("/api/road-alerts", async (req, res) => {
+    try {
+      const alerts = await storage.getActiveRoadAlerts();
+      res.json(alerts);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/road-alerts", async (req, res) => {
+    try {
+      const validatedData = insertRoadAlertSchema.parse(req.body);
+      const alert = await storage.createRoadAlert(validatedData);
+      res.json(alert);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  // ============ LEARNING VIDEOS ============
+  app.get("/api/learning-videos", async (req, res) => {
+    try {
+      const category = req.query.category as string | undefined;
+      const videos = category 
+        ? await storage.getLearningVideosByCategory(category)
+        : await storage.getAllLearningVideos();
+      res.json(videos);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/learning-videos/:id/complete", async (req, res) => {
+    try {
+      const { driverId } = req.body;
+      const video = await storage.getLearningVideo(req.params.id);
+      
+      if (!video) {
+        return res.status(404).json({ error: "Video not found" });
+      }
+
+      // Record completion
+      const completion = await storage.completeVideo({
+        driverId,
+        videoId: req.params.id,
+        pointsEarned: video.pointsReward,
+      });
+
+      // Award points to driver
+      const driver = await storage.getDriver(driverId);
+      if (driver) {
+        await storage.updateDriver(driver.id, {
+          totalPoints: driver.totalPoints + video.pointsReward,
+        });
+      }
+
+      res.json({ completion, pointsEarned: video.pointsReward });
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/learning-videos/driver/:driverId/completed", async (req, res) => {
+    try {
+      const completions = await storage.getCompletedVideos(req.params.driverId);
+      res.json(completions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ============ CHECKLISTS ============
+  app.get("/api/checklist-templates", async (req, res) => {
+    try {
+      const type = req.query.type as string | undefined;
+      if (type) {
+        const template = await storage.getChecklistTemplateByType(type);
+        res.json(template || null);
+      } else {
+        const templates = await storage.getAllChecklistTemplates();
+        res.json(templates);
+      }
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.post("/api/checklist-completions", async (req, res) => {
+    try {
+      const validatedData = insertChecklistCompletionSchema.parse(req.body);
+      const completion = await storage.completeChecklist(validatedData);
+      
+      // Award bonus points for 100% completion
+      if (completion.allItemsCompleted) {
+        const driver = await storage.getDriver(completion.driverId);
+        if (driver) {
+          await storage.updateDriver(driver.id, {
+            totalPoints: driver.totalPoints + 20, // Bonus for complete checklist
+          });
+        }
+      }
+      
+      res.json(completion);
+    } catch (error: any) {
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/checklist-completions/driver/:driverId", async (req, res) => {
+    try {
+      const completions = await storage.getChecklistCompletionsByDriver(req.params.driverId);
+      res.json(completions);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.get("/api/checklist-completions/trip/:tripId", async (req, res) => {
+    try {
+      const completions = await storage.getChecklistCompletionsByTrip(req.params.tripId);
+      res.json(completions);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

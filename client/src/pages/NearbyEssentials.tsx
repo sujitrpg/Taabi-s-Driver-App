@@ -3,12 +3,12 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { UtensilsCrossed, Fuel, Wrench, ParkingCircle, Search, Star, MapPin, Phone } from "lucide-react";
+import { UtensilsCrossed, Fuel, Wrench, ParkingCircle, Search, Star, MapPin, Phone, Truck, Hospital, Building2, ShieldCheck, Settings2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useNearbyPlaces } from "@/lib/hooks/useNearbyPlaces";
 import { Skeleton } from "@/components/ui/skeleton";
 
-type Category = "dhaba" | "fuel" | "mechanic" | "parking";
+type Category = "dhaba" | "fuel" | "mechanic" | "parking" | "towing" | "clinic" | "rto" | "police" | "puncture";
 
 export default function NearbyEssentials() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -19,6 +19,11 @@ export default function NearbyEssentials() {
     { id: "fuel" as Category, icon: Fuel, label: "Fuel", color: "bg-emerald-500" },
     { id: "mechanic" as Category, icon: Wrench, label: "Mechanic", color: "bg-blue-500" },
     { id: "parking" as Category, icon: ParkingCircle, label: "Parking", color: "bg-purple-500" },
+    { id: "towing" as Category, icon: Truck, label: "Towing", color: "bg-red-500" },
+    { id: "clinic" as Category, icon: Hospital, label: "Clinic", color: "bg-pink-500" },
+    { id: "rto" as Category, icon: Building2, label: "RTO", color: "bg-indigo-500" },
+    { id: "police" as Category, icon: ShieldCheck, label: "Police", color: "bg-cyan-500" },
+    { id: "puncture" as Category, icon: Settings2, label: "Puncture", color: "bg-amber-500" },
   ];
 
   const { data: nearbyPlaces, isLoading } = useNearbyPlaces(selectedCategory || undefined);

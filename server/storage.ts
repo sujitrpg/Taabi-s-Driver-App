@@ -22,6 +22,20 @@ import type {
   InsertWellnessTip,
   Route,
   InsertRoute,
+  SupportResource,
+  InsertSupportResource,
+  FatigueCheckIn,
+  InsertFatigueCheckIn,
+  RoadAlert,
+  InsertRoadAlert,
+  LearningVideo,
+  InsertLearningVideo,
+  VideoCompletion,
+  InsertVideoCompletion,
+  ChecklistTemplate,
+  InsertChecklistTemplate,
+  ChecklistCompletion,
+  InsertChecklistCompletion,
 } from "@shared/schema";
 
 export interface IStorage {
@@ -76,6 +90,38 @@ export interface IStorage {
   createRoute(route: InsertRoute): Promise<Route>;
   getRoute(id: string): Promise<Route | undefined>;
   getRoutesByDriver(driverId: string): Promise<Route[]>;
+
+  // Support Resources
+  getAllSupportResources(): Promise<SupportResource[]>;
+  getSupportResourcesByCategory(category: string): Promise<SupportResource[]>;
+  createSupportResource(resource: InsertSupportResource): Promise<SupportResource>;
+
+  // Fatigue Check-Ins
+  createFatigueCheckIn(checkIn: InsertFatigueCheckIn): Promise<FatigueCheckIn>;
+  getFatigueCheckInsByDriver(driverId: string): Promise<FatigueCheckIn[]>;
+  getLatestFatigueCheckIn(driverId: string): Promise<FatigueCheckIn | undefined>;
+
+  // Road Alerts
+  getActiveRoadAlerts(): Promise<RoadAlert[]>;
+  getRoadAlert(id: string): Promise<RoadAlert | undefined>;
+  createRoadAlert(alert: InsertRoadAlert): Promise<RoadAlert>;
+  updateRoadAlert(id: string, updates: Partial<RoadAlert>): Promise<RoadAlert | undefined>;
+
+  // Learning Videos
+  getAllLearningVideos(): Promise<LearningVideo[]>;
+  getLearningVideosByCategory(category: string): Promise<LearningVideo[]>;
+  getLearningVideo(id: string): Promise<LearningVideo | undefined>;
+  createLearningVideo(video: InsertLearningVideo): Promise<LearningVideo>;
+  completeVideo(completion: InsertVideoCompletion): Promise<VideoCompletion>;
+  getCompletedVideos(driverId: string): Promise<(VideoCompletion & { video: LearningVideo })[]>;
+
+  // Checklists
+  getAllChecklistTemplates(): Promise<ChecklistTemplate[]>;
+  getChecklistTemplateByType(checklistType: string): Promise<ChecklistTemplate | undefined>;
+  createChecklistTemplate(template: InsertChecklistTemplate): Promise<ChecklistTemplate>;
+  completeChecklist(completion: InsertChecklistCompletion): Promise<ChecklistCompletion>;
+  getChecklistCompletionsByDriver(driverId: string): Promise<ChecklistCompletion[]>;
+  getChecklistCompletionsByTrip(tripId: string): Promise<ChecklistCompletion[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -90,6 +136,13 @@ export class MemStorage implements IStorage {
   private communityPosts: Map<string, CommunityPost>;
   private wellnessTips: Map<string, WellnessTip>;
   private routes: Map<string, Route>;
+  private supportResources: Map<string, SupportResource>;
+  private fatigueCheckIns: Map<string, FatigueCheckIn>;
+  private roadAlerts: Map<string, RoadAlert>;
+  private learningVideos: Map<string, LearningVideo>;
+  private videoCompletions: Map<string, VideoCompletion>;
+  private checklistTemplates: Map<string, ChecklistTemplate>;
+  private checklistCompletions: Map<string, ChecklistCompletion>;
 
   constructor() {
     this.drivers = new Map();
@@ -103,6 +156,13 @@ export class MemStorage implements IStorage {
     this.communityPosts = new Map();
     this.wellnessTips = new Map();
     this.routes = new Map();
+    this.supportResources = new Map();
+    this.fatigueCheckIns = new Map();
+    this.roadAlerts = new Map();
+    this.learningVideos = new Map();
+    this.videoCompletions = new Map();
+    this.checklistTemplates = new Map();
+    this.checklistCompletions = new Map();
     this.seedData();
   }
 
@@ -381,6 +441,186 @@ export class MemStorage implements IStorage {
     return Array.from(this.routes.values()).filter((r) => r.driverId === driverId);
   }
 
+  // Support Resources
+  async getAllSupportResources(): Promise<SupportResource[]> {
+    return Array.from(this.supportResources.values());
+  }
+
+  async getSupportResourcesByCategory(category: string): Promise<SupportResource[]> {
+    return Array.from(this.supportResources.values()).filter((r) => r.category === category);
+  }
+
+  async createSupportResource(insertResource: InsertSupportResource): Promise<SupportResource> {
+    const id = randomUUID();
+    const resource: SupportResource = {
+      ...insertResource,
+      id,
+      contactNumber: insertResource.contactNumber || null,
+      website: insertResource.website || null,
+      isVerified: insertResource.isVerified !== undefined ? insertResource.isVerified : true,
+    };
+    this.supportResources.set(id, resource);
+    return resource;
+  }
+
+  // Fatigue Check-Ins
+  async createFatigueCheckIn(insertCheckIn: InsertFatigueCheckIn): Promise<FatigueCheckIn> {
+    const id = randomUUID();
+    const checkIn: FatigueCheckIn = {
+      ...insertCheckIn,
+      id,
+      tripId: insertCheckIn.tripId || null,
+      response: insertCheckIn.response || null,
+      actionTaken: insertCheckIn.actionTaken || null,
+      checkInTime: new Date(),
+    };
+    this.fatigueCheckIns.set(id, checkIn);
+    return checkIn;
+  }
+
+  async getFatigueCheckInsByDriver(driverId: string): Promise<FatigueCheckIn[]> {
+    return Array.from(this.fatigueCheckIns.values())
+      .filter((c) => c.driverId === driverId)
+      .sort((a, b) => b.checkInTime.getTime() - a.checkInTime.getTime());
+  }
+
+  async getLatestFatigueCheckIn(driverId: string): Promise<FatigueCheckIn | undefined> {
+    const checkIns = await this.getFatigueCheckInsByDriver(driverId);
+    return checkIns[0];
+  }
+
+  // Road Alerts
+  async getActiveRoadAlerts(): Promise<RoadAlert[]> {
+    const now = new Date();
+    return Array.from(this.roadAlerts.values())
+      .filter((alert) => {
+        if (!alert.isActive) return false;
+        if (alert.expiresAt && alert.expiresAt < now) return false;
+        return true;
+      })
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getRoadAlert(id: string): Promise<RoadAlert | undefined> {
+    return this.roadAlerts.get(id);
+  }
+
+  async createRoadAlert(insertAlert: InsertRoadAlert): Promise<RoadAlert> {
+    const id = randomUUID();
+    const alert: RoadAlert = {
+      ...insertAlert,
+      id,
+      latitude: insertAlert.latitude || null,
+      longitude: insertAlert.longitude || null,
+      reportedBy: insertAlert.reportedBy || null,
+      isActive: insertAlert.isActive !== undefined ? insertAlert.isActive : true,
+      createdAt: new Date(),
+      expiresAt: insertAlert.expiresAt || null,
+    };
+    this.roadAlerts.set(id, alert);
+    return alert;
+  }
+
+  async updateRoadAlert(id: string, updates: Partial<RoadAlert>): Promise<RoadAlert | undefined> {
+    const alert = this.roadAlerts.get(id);
+    if (!alert) return undefined;
+    const updated = { ...alert, ...updates };
+    this.roadAlerts.set(id, updated);
+    return updated;
+  }
+
+  // Learning Videos
+  async getAllLearningVideos(): Promise<LearningVideo[]> {
+    return Array.from(this.learningVideos.values());
+  }
+
+  async getLearningVideosByCategory(category: string): Promise<LearningVideo[]> {
+    return Array.from(this.learningVideos.values()).filter((v) => v.category === category);
+  }
+
+  async getLearningVideo(id: string): Promise<LearningVideo | undefined> {
+    return this.learningVideos.get(id);
+  }
+
+  async createLearningVideo(insertVideo: InsertLearningVideo): Promise<LearningVideo> {
+    const id = randomUUID();
+    const video: LearningVideo = {
+      ...insertVideo,
+      id,
+      thumbnailUrl: insertVideo.thumbnailUrl || null,
+      videoUrl: insertVideo.videoUrl || null,
+      pointsReward: insertVideo.pointsReward || 10,
+      createdAt: new Date(),
+    };
+    this.learningVideos.set(id, video);
+    return video;
+  }
+
+  async completeVideo(insertCompletion: InsertVideoCompletion): Promise<VideoCompletion> {
+    const id = randomUUID();
+    const completion: VideoCompletion = {
+      ...insertCompletion,
+      id,
+      completedAt: new Date(),
+    };
+    this.videoCompletions.set(id, completion);
+    return completion;
+  }
+
+  async getCompletedVideos(driverId: string): Promise<(VideoCompletion & { video: LearningVideo })[]> {
+    const completions = Array.from(this.videoCompletions.values())
+      .filter((c) => c.driverId === driverId)
+      .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime());
+    return completions.map((c) => ({
+      ...c,
+      video: this.learningVideos.get(c.videoId)!,
+    }));
+  }
+
+  // Checklists
+  async getAllChecklistTemplates(): Promise<ChecklistTemplate[]> {
+    return Array.from(this.checklistTemplates.values());
+  }
+
+  async getChecklistTemplateByType(checklistType: string): Promise<ChecklistTemplate | undefined> {
+    return Array.from(this.checklistTemplates.values()).find((t) => t.checklistType === checklistType);
+  }
+
+  async createChecklistTemplate(insertTemplate: InsertChecklistTemplate): Promise<ChecklistTemplate> {
+    const id = randomUUID();
+    const template: ChecklistTemplate = {
+      ...insertTemplate,
+      id,
+    };
+    this.checklistTemplates.set(id, template);
+    return template;
+  }
+
+  async completeChecklist(insertCompletion: InsertChecklistCompletion): Promise<ChecklistCompletion> {
+    const id = randomUUID();
+    const completion: ChecklistCompletion = {
+      ...insertCompletion,
+      id,
+      tripId: insertCompletion.tripId || null,
+      notes: insertCompletion.notes || null,
+      completedAt: new Date(),
+    };
+    this.checklistCompletions.set(id, completion);
+    return completion;
+  }
+
+  async getChecklistCompletionsByDriver(driverId: string): Promise<ChecklistCompletion[]> {
+    return Array.from(this.checklistCompletions.values())
+      .filter((c) => c.driverId === driverId)
+      .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime());
+  }
+
+  async getChecklistCompletionsByTrip(tripId: string): Promise<ChecklistCompletion[]> {
+    return Array.from(this.checklistCompletions.values())
+      .filter((c) => c.tripId === tripId)
+      .sort((a, b) => b.completedAt.getTime() - a.completedAt.getTime());
+  }
+
   private seedData() {
     // Seed default driver
     const defaultDriver: Driver = {
@@ -486,6 +726,133 @@ export class MemStorage implements IStorage {
     postData.forEach((p) => {
       const post = { ...p, id: randomUUID(), createdAt: new Date() };
       this.communityPosts.set(post.id, post);
+    });
+
+    // Seed support resources
+    const supportData: InsertSupportResource[] = [
+      { title: "Accidental Insurance", description: "Get coverage for truck accidents. Comprehensive protection for your vehicle and cargo.", category: "accidental_insurance", contactNumber: "1800-123-4567", website: "https://truckinsure.com", iconName: "shield-check", isVerified: true },
+      { title: "Health Insurance for Drivers", description: "Affordable health insurance plans designed for professional drivers.", category: "health_insurance", contactNumber: "1800-234-5678", website: "https://driverhealth.com", iconName: "heart-pulse", isVerified: true },
+      { title: "Emergency Cash Advance", description: "Quick cash loans for urgent needs on the road. Instant approval for verified drivers.", category: "loan", contactNumber: "1800-345-6789", website: "https://quickcash.com", iconName: "indian-rupee", isVerified: true },
+      { title: "Emergency Fund Support", description: "Financial assistance during emergencies. No-questions-asked support for medical or vehicle emergencies.", category: "emergency_fund", contactNumber: "1800-456-7890", website: "https://emergencyfund.com", iconName: "life-buoy", isVerified: true },
+      { title: "Truck Loan & Finance", description: "Low-interest loans for purchasing new trucks. Easy EMI options available.", category: "loan", contactNumber: "1800-567-8901", website: "https://truckfinance.com", iconName: "truck", isVerified: true },
+    ];
+    supportData.forEach((s) => {
+      const resource = { 
+        ...s, 
+        id: randomUUID(),
+        contactNumber: s.contactNumber ?? null,
+        website: s.website ?? null,
+        isVerified: s.isVerified ?? true
+      };
+      this.supportResources.set(resource.id, resource);
+    });
+
+    // Seed more nearby places (highway help services)
+    const helpServiceData: InsertNearbyPlace[] = [
+      { name: "Highway Towing Service", category: "towing", latitude: 19.0800, longitude: 72.8800, address: "NH-48, Mumbai Outskirts", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "24/7 Roadside Assistance", category: "towing", latitude: 19.1350, longitude: 72.9350, address: "Eastern Freeway, Thane", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: 10, imageUrl: null, verifiedBy: null },
+      { name: "Emergency Medical Clinic", category: "clinic", latitude: 19.0700, longitude: 72.8700, address: "Highway Medical Center, Mumbai", isVeg: null, isNonVeg: null, hasTruckParking: false, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "24Hr Highway Hospital", category: "clinic", latitude: 19.1450, longitude: 72.9450, address: "NH-48, Kalyan", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "RTO Office Mumbai", category: "rto", latitude: 19.0550, longitude: 72.8550, address: "Western Express Highway, Andheri", isVeg: null, isNonVeg: null, hasTruckParking: false, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "RTO Office Thane", category: "rto", latitude: 19.1900, longitude: 72.9700, address: "Ghodbunder Road, Thane", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Highway Police Station", category: "police", latitude: 19.0950, longitude: 72.9050, address: "Mumbai-Nasik Highway, Bhiwandi", isVeg: null, isNonVeg: null, hasTruckParking: false, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Traffic Police Checkpoint", category: "police", latitude: 19.1550, longitude: 72.9550, address: "Eastern Express Highway", isVeg: null, isNonVeg: null, hasTruckParking: false, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Puncture Repair Shop", category: "puncture", latitude: 19.0650, longitude: 72.8650, address: "Service Road, NH-48", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: null, imageUrl: null, verifiedBy: null },
+      { name: "Fast Tyre Fix", category: "puncture", latitude: 19.1250, longitude: 72.9250, address: "Thane-Belapur Road", isVeg: null, isNonVeg: null, hasTruckParking: true, hygieneRating: null, isOpen: true, discount: 15, imageUrl: null, verifiedBy: null },
+    ];
+    helpServiceData.forEach((p) => {
+      const place = { 
+        ...p, 
+        id: randomUUID(), 
+        createdAt: new Date(),
+        imageUrl: p.imageUrl ?? null,
+        verifiedBy: p.verifiedBy ?? null,
+        hygieneRating: p.hygieneRating ?? null,
+        discount: p.discount ?? null,
+        isVeg: p.isVeg ?? null,
+        isNonVeg: p.isNonVeg ?? null,
+        hasTruckParking: p.hasTruckParking ?? null,
+        isOpen: p.isOpen ?? true
+      };
+      this.nearbyPlaces.set(place.id, place);
+    });
+
+    // Seed road alerts
+    const alertData: InsertRoadAlert[] = [
+      { title: "Accident Ahead", description: "Major accident on NH-48 near Thane exit. Traffic diverted.", alertType: "accident", severity: "high", location: "NH-48, Thane Exit", latitude: 19.2000, longitude: 72.9800, reportedBy: null, isActive: true, expiresAt: null },
+      { title: "Heavy Rain Warning", description: "Heavy rainfall expected in next 2 hours. Drive carefully.", alertType: "weather", severity: "medium", location: "Mumbai-Pune Highway", latitude: 19.0000, longitude: 73.0000, reportedBy: null, isActive: true, expiresAt: null },
+      { title: "Road Under Construction", description: "Single lane operation for next 5km. Expect delays.", alertType: "blocked_road", severity: "low", location: "NH-48, Kalyan", latitude: 19.2400, longitude: 73.1300, reportedBy: null, isActive: true, expiresAt: null },
+    ];
+    alertData.forEach((a) => {
+      const alert = { 
+        ...a, 
+        id: randomUUID(), 
+        createdAt: new Date(),
+        latitude: a.latitude ?? null,
+        longitude: a.longitude ?? null,
+        reportedBy: a.reportedBy ?? null,
+        expiresAt: a.expiresAt ?? null,
+        isActive: a.isActive ?? true
+      };
+      this.roadAlerts.set(alert.id, alert);
+    });
+
+    // Seed learning videos
+    const videoData: InsertLearningVideo[] = [
+      { title: "Tyre Safety Check", description: "Learn how to check tyre pressure and tread depth properly.", category: "tyres", duration: 30, pointsReward: 10, thumbnailUrl: null, videoUrl: null, iconName: "circle-dot" },
+      { title: "Braking Techniques", description: "Master emergency braking and avoid skidding.", category: "braking", duration: 25, pointsReward: 10, thumbnailUrl: null, videoUrl: null, iconName: "octagon" },
+      { title: "Night Driving Safety", description: "Essential tips for safe driving after dark.", category: "night_driving", duration: 20, pointsReward: 10, thumbnailUrl: null, videoUrl: null, iconName: "moon" },
+      { title: "Emergency Handling", description: "What to do when your truck breaks down.", category: "emergency", duration: 30, pointsReward: 15, thumbnailUrl: null, videoUrl: null, iconName: "siren" },
+      { title: "Basic Maintenance", description: "Daily checks every driver should perform.", category: "maintenance", duration: 25, pointsReward: 10, thumbnailUrl: null, videoUrl: null, iconName: "wrench" },
+      { title: "Load Securing", description: "How to properly secure cargo to prevent accidents.", category: "maintenance", duration: 30, pointsReward: 15, thumbnailUrl: null, videoUrl: null, iconName: "package" },
+    ];
+    videoData.forEach((v) => {
+      const video = { 
+        ...v, 
+        id: randomUUID(), 
+        createdAt: new Date(),
+        thumbnailUrl: v.thumbnailUrl ?? null,
+        videoUrl: v.videoUrl ?? null,
+        pointsReward: v.pointsReward ?? 10
+      };
+      this.learningVideos.set(video.id, video);
+    });
+
+    // Seed checklist templates
+    const checklistData: InsertChecklistTemplate[] = [
+      { 
+        name: "Pre-Trip Inspection", 
+        checklistType: "pre_trip", 
+        items: [
+          "Check tyre pressure",
+          "Test brakes",
+          "Verify all lights working",
+          "Check all documents (license, RC, insurance, pollution)",
+          "Test horn",
+          "Check engine oil level",
+          "Inspect mirrors",
+          "Check windshield wipers",
+          "Verify cargo is secured",
+          "Check fuel level"
+        ]
+      },
+      { 
+        name: "Post-Trip Review", 
+        checklistType: "post_trip", 
+        items: [
+          "Check for any vehicle damage",
+          "Report any maintenance issues",
+          "Clean cabin area",
+          "Verify all cargo delivered",
+          "Log trip details",
+          "Check tyre condition",
+          "Report any safety concerns"
+        ]
+      },
+    ];
+    checklistData.forEach((c) => {
+      const template = { ...c, id: randomUUID() };
+      this.checklistTemplates.set(template.id, template);
     });
   }
 }

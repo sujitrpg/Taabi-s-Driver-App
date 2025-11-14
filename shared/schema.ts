@@ -225,3 +225,140 @@ export const insertRouteSchema = createInsertSchema(routes).omit({
 
 export type InsertRoute = z.infer<typeof insertRouteSchema>;
 export type Route = typeof routes.$inferSelect;
+
+// ============ SUPPORT RESOURCES (Insurance & Financial) ============
+export const supportResources = pgTable("support_resources", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // insurance, loan, emergency_fund, health_insurance, accidental_insurance
+  contactNumber: text("contact_number"),
+  website: text("website"),
+  iconName: text("icon_name").notNull(),
+  isVerified: boolean("is_verified").default(true),
+});
+
+export const insertSupportResourceSchema = createInsertSchema(supportResources).omit({
+  id: true,
+});
+
+export type InsertSupportResource = z.infer<typeof insertSupportResourceSchema>;
+export type SupportResource = typeof supportResources.$inferSelect;
+
+// ============ FATIGUE CHECK-INS ============
+export const fatigueCheckIns = pgTable("fatigue_check_ins", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  driverId: varchar("driver_id").notNull().references(() => drivers.id),
+  tripId: varchar("trip_id").references(() => trips.id),
+  checkInTime: timestamp("check_in_time").notNull().defaultNow(),
+  feelingSleepy: boolean("feeling_sleepy").notNull(),
+  tookBreak: boolean("took_break").notNull(),
+  hadMeal: boolean("had_meal").notNull(),
+  response: text("response"), // driver's text response
+  actionTaken: text("action_taken"), // recommended rest stop, etc
+});
+
+export const insertFatigueCheckInSchema = createInsertSchema(fatigueCheckIns).omit({
+  id: true,
+  checkInTime: true,
+});
+
+export type InsertFatigueCheckIn = z.infer<typeof insertFatigueCheckInSchema>;
+export type FatigueCheckIn = typeof fatigueCheckIns.$inferSelect;
+
+// ============ ROAD ALERTS ============
+export const roadAlerts = pgTable("road_alerts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  alertType: text("alert_type").notNull(), // accident, weather, blocked_road, traffic_jam, protest, bad_highway
+  severity: text("severity").notNull(), // low, medium, high
+  location: text("location").notNull(),
+  latitude: real("latitude"),
+  longitude: real("longitude"),
+  reportedBy: varchar("reported_by").references(() => drivers.id),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  expiresAt: timestamp("expires_at"),
+});
+
+export const insertRoadAlertSchema = createInsertSchema(roadAlerts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertRoadAlert = z.infer<typeof insertRoadAlertSchema>;
+export type RoadAlert = typeof roadAlerts.$inferSelect;
+
+// ============ LEARNING VIDEOS ============
+export const learningVideos = pgTable("learning_videos", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  category: text("category").notNull(), // tyres, braking, night_driving, emergency, maintenance
+  duration: integer("duration").notNull(), // in seconds
+  pointsReward: integer("points_reward").notNull().default(10),
+  thumbnailUrl: text("thumbnail_url"),
+  videoUrl: text("video_url"),
+  iconName: text("icon_name").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertLearningVideoSchema = createInsertSchema(learningVideos).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertLearningVideo = z.infer<typeof insertLearningVideoSchema>;
+export type LearningVideo = typeof learningVideos.$inferSelect;
+
+// Track video completion
+export const videoCompletions = pgTable("video_completions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  driverId: varchar("driver_id").notNull().references(() => drivers.id),
+  videoId: varchar("video_id").notNull().references(() => learningVideos.id),
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+  pointsEarned: integer("points_earned").notNull(),
+});
+
+export const insertVideoCompletionSchema = createInsertSchema(videoCompletions).omit({
+  id: true,
+  completedAt: true,
+});
+
+export type InsertVideoCompletion = z.infer<typeof insertVideoCompletionSchema>;
+export type VideoCompletion = typeof videoCompletions.$inferSelect;
+
+// ============ TRUCK CHECKLISTS ============
+export const checklistTemplates = pgTable("checklist_templates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  checklistType: text("checklist_type").notNull(), // pre_trip, post_trip
+  items: text("items").array().notNull(),
+});
+
+export const insertChecklistTemplateSchema = createInsertSchema(checklistTemplates).omit({
+  id: true,
+});
+
+export type InsertChecklistTemplate = z.infer<typeof insertChecklistTemplateSchema>;
+export type ChecklistTemplate = typeof checklistTemplates.$inferSelect;
+
+export const checklistCompletions = pgTable("checklist_completions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  driverId: varchar("driver_id").notNull().references(() => drivers.id),
+  tripId: varchar("trip_id").references(() => trips.id),
+  checklistType: text("checklist_type").notNull(), // pre_trip, post_trip
+  completedItems: text("completed_items").array().notNull(),
+  allItemsCompleted: boolean("all_items_completed").notNull(),
+  completedAt: timestamp("completed_at").notNull().defaultNow(),
+  notes: text("notes"),
+});
+
+export const insertChecklistCompletionSchema = createInsertSchema(checklistCompletions).omit({
+  id: true,
+  completedAt: true,
+});
+
+export type InsertChecklistCompletion = z.infer<typeof insertChecklistCompletionSchema>;
+export type ChecklistCompletion = typeof checklistCompletions.$inferSelect;

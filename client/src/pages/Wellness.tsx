@@ -1,8 +1,57 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Heart, Droplets, Clock, Activity, Coffee, Eye, Footprints } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Heart, Droplets, Clock, Activity, Coffee, Eye, Footprints, AlertCircle, CheckCircle, MapPin, Utensils } from "lucide-react";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import type { FatigueCheckIn } from "@shared/schema";
+
+const DEFAULT_DRIVER_ID = "default-driver-1";
 
 export default function Wellness() {
+  const { toast } = useToast();
+  const [showCheckIn, setShowCheckIn] = useState(false);
+  const [checkInResponses, setCheckInResponses] = useState({
+    feelingSleepy: false,
+    tookBreak: false,
+    hadMeal: false,
+  });
+
+  const { data: recentCheckIns } = useQuery<FatigueCheckIn[]>({
+    queryKey: ["/api/fatigue-checkins/driver", DEFAULT_DRIVER_ID],
+  });
+
+  const checkInMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/fatigue-checkins", {
+        driverId: DEFAULT_DRIVER_ID,
+        ...checkInResponses,
+      });
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/fatigue-checkins/driver", DEFAULT_DRIVER_ID] });
+      queryClient.invalidateQueries({ queryKey: ["/api/driver"] });
+      setShowCheckIn(false);
+      
+      if (data.recommendations && data.recommendations.length > 0) {
+        toast({
+          title: "Safety Alert",
+          description: data.warning || "Please take a break soon. We found nearby rest stops for you.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Check-in Complete!",
+          description: "Great! Keep up the safe driving.",
+        });
+      }
+      
+      setCheckInResponses({ feelingSleepy: false, tookBreak: false, hadMeal: false });
+    },
+  });
   const tips = [
     {
       id: 1,
@@ -96,6 +145,148 @@ export default function Wellness() {
       </div>
 
       <div className="p-4 -mt-8 space-y-6">
+        {!showCheckIn ? (
+          <Card className="p-6 bg-gradient-to-br from-taabi-blue/10 to-transparent">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-bold text-lg">Fatigue Check-In</h3>
+              <Badge className="bg-lime-green/20 text-lime-green border-lime-green/30">
+                Long Trip Safety
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Taking a quick check-in helps us ensure your safety on long trips. Answer a few quick questions.
+            </p>
+            <Button 
+              className="w-full" 
+              onClick={() => setShowCheckIn(true)}
+              data-testid="button-start-checkin"
+            >
+              Start Check-In
+            </Button>
+          </Card>
+        ) : (
+          <Card className="p-6">
+            <h3 className="font-bold text-lg mb-4">How are you feeling?</h3>
+            <div className="space-y-4">
+              <div 
+                className={`p-4 rounded-lg border-2 cursor-pointer hover-elevate ${
+                  checkInResponses.feelingSleepy ? "border-red-500 bg-red-500/10" : "border-border"
+                }`}
+                onClick={() => setCheckInResponses(prev => ({ ...prev, feelingSleepy: !prev.feelingSleepy }))}
+                data-testid="checkbox-sleepy"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className={checkInResponses.feelingSleepy ? "text-red-500" : "text-muted-foreground"} />
+                    <div>
+                      <p className="font-medium">Feeling sleepy?</p>
+                      <p className="text-sm text-muted-foreground">It's important to be honest</p>
+                    </div>
+                  </div>
+                  {checkInResponses.feelingSleepy && <CheckCircle className="text-red-500" />}
+                </div>
+              </div>
+
+              <div 
+                className={`p-4 rounded-lg border-2 cursor-pointer hover-elevate ${
+                  checkInResponses.tookBreak ? "border-lime-green bg-lime-green/10" : "border-border"
+                }`}
+                onClick={() => setCheckInResponses(prev => ({ ...prev, tookBreak: !prev.tookBreak }))}
+                data-testid="checkbox-break"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <MapPin className={checkInResponses.tookBreak ? "text-lime-green" : "text-muted-foreground"} />
+                    <div>
+                      <p className="font-medium">Did you take a rest break?</p>
+                      <p className="text-sm text-muted-foreground">In the last 2 hours</p>
+                    </div>
+                  </div>
+                  {checkInResponses.tookBreak && <CheckCircle className="text-lime-green" />}
+                </div>
+              </div>
+
+              <div 
+                className={`p-4 rounded-lg border-2 cursor-pointer hover-elevate ${
+                  checkInResponses.hadMeal ? "border-lime-green bg-lime-green/10" : "border-border"
+                }`}
+                onClick={() => setCheckInResponses(prev => ({ ...prev, hadMeal: !prev.hadMeal }))}
+                data-testid="checkbox-meal"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Utensils className={checkInResponses.hadMeal ? "text-lime-green" : "text-muted-foreground"} />
+                    <div>
+                      <p className="font-medium">Have you eaten?</p>
+                      <p className="text-sm text-muted-foreground">Stay energized</p>
+                    </div>
+                  </div>
+                  {checkInResponses.hadMeal && <CheckCircle className="text-lime-green" />}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 mt-6">
+              <Button 
+                variant="outline" 
+                className="flex-1"
+                onClick={() => {
+                  setShowCheckIn(false);
+                  setCheckInResponses({ feelingSleepy: false, tookBreak: false, hadMeal: false });
+                }}
+                data-testid="button-cancel-checkin"
+              >
+                Cancel
+              </Button>
+              <Button 
+                className="flex-1"
+                disabled={checkInMutation.isPending}
+                onClick={() => checkInMutation.mutate()}
+                data-testid="button-submit-checkin"
+              >
+                {checkInMutation.isPending ? "Submitting..." : "Submit"}
+              </Button>
+            </div>
+
+            {checkInResponses.feelingSleepy && (
+              <div className="mt-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-red-500 mb-1">Safety Alert</p>
+                  <p className="text-sm text-muted-foreground">
+                    If you're feeling sleepy, please find a safe place to rest immediately. We'll show you nearby parking and rest areas.
+                  </p>
+                </div>
+              </div>
+            )}
+          </Card>
+        )}
+
+        {recentCheckIns && recentCheckIns.length > 0 && (
+          <Card className="p-4">
+            <h3 className="font-medium mb-3">Recent Check-Ins</h3>
+            <div className="space-y-2">
+              {recentCheckIns.slice(0, 3).map((checkIn) => (
+                <div key={checkIn.id} className="flex items-center justify-between text-sm p-2 rounded bg-muted/50">
+                  <span className="text-muted-foreground">
+                    {new Date(checkIn.checkInTime).toLocaleString("en-IN", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  {checkIn.feelingSleepy ? (
+                    <Badge variant="destructive" className="text-xs">Sleepy</Badge>
+                  ) : (
+                    <Badge variant="secondary" className="text-xs bg-lime-green/20 text-lime-green">OK</Badge>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
+
         <Card className="p-6 bg-gradient-to-br from-taabi-blue/10 to-transparent">
           <h3 className="font-bold text-lg mb-4">Today's Reminders</h3>
           <div className="space-y-2">

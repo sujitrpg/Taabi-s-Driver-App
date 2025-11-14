@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BottomNav } from "@/components/BottomNav";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { RoadAlertsNotifier } from "@/components/RoadAlertsNotifier";
 import Dashboard from "@/pages/Dashboard";
 import RoutePlanner from "@/pages/RoutePlanner";
 import NearbyEssentials from "@/pages/NearbyEssentials";
@@ -16,6 +17,9 @@ import Profile from "@/pages/Profile";
 import Login from "@/pages/Login";
 import TripSummary from "@/pages/TripSummary";
 import Wellness from "@/pages/Wellness";
+import SupportHub from "@/pages/SupportHub";
+import LearningHub from "@/pages/LearningHub";
+import TruckChecklist from "@/pages/TruckChecklist";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ component: Component, path }: { component: any; path?: string }) {
@@ -72,9 +76,19 @@ function Router() {
         <Route path="/wellness">
           <ProtectedRoute component={Wellness} path="/wellness" />
         </Route>
+        <Route path="/support">
+          <ProtectedRoute component={SupportHub} path="/support" />
+        </Route>
+        <Route path="/learning">
+          <ProtectedRoute component={LearningHub} path="/learning" />
+        </Route>
+        <Route path="/checklist">
+          <ProtectedRoute component={TruckChecklist} path="/checklist" />
+        </Route>
         <Route component={NotFound} />
       </Switch>
       {showNav && <BottomNav />}
+      {isAuthenticated && <RoadAlertsNotifier />}
     </>
   );
 }
