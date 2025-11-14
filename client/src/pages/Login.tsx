@@ -3,24 +3,35 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Truck, User, Lock, ArrowRight, AlertCircle } from "lucide-react";
+import { Truck, User, Lock, ArrowRight, AlertCircle, ScanFace } from "lucide-react";
 import { useLocation } from "wouter";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
+import taabiLogo from "@assets/download_1763097036090.jpeg";
 
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isScanning, setIsScanning] = useState(false);
   const [, setLocation] = useLocation();
+  const { login } = useAuth();
 
   const handleLogin = () => {
     if (username && password) {
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("username", username);
+      login(username);
       setLocation("/");
     } else {
       setError("Please enter both username and password");
     }
+  };
+
+  const handleFaceScan = () => {
+    setIsScanning(true);
+    setTimeout(() => {
+      login("Face Scan User");
+      setLocation("/");
+    }, 2000);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -33,8 +44,8 @@ export default function Login() {
     <div className="min-h-screen bg-gradient-to-br from-taabi-blue via-taabi-blue/90 to-taabi-blue/80 flex items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center text-white">
-          <div className="w-20 h-20 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl">
-            <Truck className="w-12 h-12 text-taabi-blue" />
+          <div className="w-32 h-32 bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl overflow-hidden p-2">
+            <img src={taabiLogo} alt="Taabi Logo" className="w-full h-full object-contain" />
           </div>
           <h1 className="text-4xl font-bold mb-2">Taabi Drive+</h1>
           <p className="text-white/80 text-lg">Your intelligent driving companion</p>
@@ -99,11 +110,45 @@ export default function Login() {
               className="w-full bg-taabi-blue hover:bg-taabi-blue/90" 
               size="lg"
               onClick={handleLogin}
-              disabled={!username || !password}
+              disabled={!username || !password || isScanning}
               data-testid="button-login"
             >
               Login
               <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            <Button 
+              variant="outline"
+              size="lg"
+              onClick={handleFaceScan}
+              disabled={isScanning}
+              className="w-full relative overflow-hidden"
+              data-testid="button-face-scan"
+            >
+              <div className={`flex items-center gap-2 ${isScanning ? 'opacity-0' : 'opacity-100'}`}>
+                <ScanFace className="w-5 h-5" />
+                Face Scan Login
+              </div>
+              {isScanning && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="w-12 h-12" style={{
+                    animation: 'flip 2s ease-in-out'
+                  }}>
+                    <ScanFace className="w-12 h-12 text-taabi-blue" />
+                  </div>
+                </div>
+              )}
             </Button>
           </div>
 
