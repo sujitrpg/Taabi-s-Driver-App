@@ -17,7 +17,7 @@ const CURRENT_DRIVER_ID = "default-driver-1";
 
 const driverAvatars: Record<string, string> = {
   "driver-3": shubhamImage,
-  "driver-2": prakharImage,
+  "driver-2": null,
   "default-driver-1": prakharImage
 };
 
