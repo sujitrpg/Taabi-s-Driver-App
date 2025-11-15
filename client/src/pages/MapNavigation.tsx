@@ -185,82 +185,103 @@ export default function MapNavigation() {
   const completedCount = deliveryPoints.filter(p => p.status === "completed").length;
   const totalStops = deliveryPoints.length;
 
+  // Define the street network route - driver follows these exact street coordinates
+  const streetRoute = [
+    { x: 20, y: 85 }, // Start position
+    { x: 20, y: 70 }, // Go north on vertical street
+    { x: 35, y: 70 }, // Turn east
+    { x: 35, y: 55 }, // Go north
+    { x: 50, y: 55 }, // Turn east
+    { x: 50, y: 40 }, // Go north
+    { x: 65, y: 40 }, // Turn east
+    { x: 65, y: 25 }, // Go north
+    { x: 50, y: 25 }, // Turn west
+    { x: 50, y: 20 }, // Arrive at destination
+  ];
+
+  // Calculate driver position along the route based on progress
+  const getDriverPosition = (progress: number) => {
+    const totalSegments = streetRoute.length - 1;
+    const segmentProgress = (progress / 100) * totalSegments;
+    const currentSegment = Math.floor(segmentProgress);
+    const segmentFraction = segmentProgress - currentSegment;
+    
+    if (currentSegment >= totalSegments) {
+      return streetRoute[streetRoute.length - 1];
+    }
+    
+    const start = streetRoute[currentSegment];
+    const end = streetRoute[currentSegment + 1];
+    
+    return {
+      x: start.x + (end.x - start.x) * segmentFraction,
+      y: start.y + (end.y - start.y) * segmentFraction,
+    };
+  };
+
+  const driverPos = getDriverPosition(simulatedProgress);
+
   return (
     <div className="h-screen relative overflow-hidden" style={{ backgroundColor: '#1a2332' }}>
       {/* Dark Google Maps Style Background */}
       <div className="absolute inset-0" style={{ backgroundColor: '#1a2332' }}>
-        {/* Street Grid - Dark theme */}
-        <svg className="absolute inset-0 w-full h-full">
-          {/* Horizontal streets */}
-          {[15, 30, 45, 60, 75].map((y) => (
+        {/* Street Grid - Dark theme with realistic streets */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Major horizontal streets */}
+          {[25, 40, 55, 70, 85].map((y) => (
             <line
               key={`h-${y}`}
               x1="0"
-              y1={`${y}%`}
-              x2="100%"
-              y2={`${y}%`}
+              y1={y}
+              x2="100"
+              y2={y}
               stroke="#2d3748"
-              strokeWidth="2"
+              strokeWidth="0.6"
+              vectorEffect="non-scaling-stroke"
             />
           ))}
           
-          {/* Vertical streets */}
-          {[15, 30, 45, 60, 75].map((x) => (
+          {/* Major vertical streets */}
+          {[20, 35, 50, 65, 80].map((x) => (
             <line
               key={`v-${x}`}
-              x1={`${x}%`}
+              x1={x}
               y1="0"
-              x2={`${x}%`}
-              y2="100%"
+              x2={x}
+              y2="100"
               stroke="#2d3748"
-              strokeWidth="2"
+              strokeWidth="0.6"
+              vectorEffect="non-scaling-stroke"
             />
           ))}
           
-          {/* Area labels with dark theme text */}
-          <text x="8%" y="25%" fill="#718096" fontSize="11" fontWeight="500">Residential</text>
-          <text x="65%" y="55%" fill="#718096" fontSize="11" fontWeight="500">Commercial</text>
+          {/* Street name labels */}
+          <text x="3" y="72" fill="#718096" fontSize="3" fontWeight="500">Park Avenue</text>
+          <text x="3" y="57" fill="#718096" fontSize="3" fontWeight="500">Main Street</text>
+          <text x="3" y="42" fill="#718096" fontSize="3" fontWeight="500">Oak Road</text>
+          <text x="3" y="27" fill="#718096" fontSize="3" fontWeight="500">Market St</text>
         </svg>
 
-        {/* Optimized Route Path - Clean bright blue like Google Maps */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }}>
-          {(() => {
-            // Calculate driver position
-            const driverLeft = 50 - (simulatedProgress / 100) * 2;
-            const driverTop = 85 - (simulatedProgress / 100) * 65;
-            
-            // Destination is always at 50%, 20%
-            const destLeft = 50;
-            const destTop = 20;
-            
-            // Create a smooth curved path from driver to destination
-            const controlX1 = driverLeft - 8;
-            const controlY1 = driverTop - 15;
-            const controlX2 = destLeft - 5;
-            const controlY2 = destTop + 10;
-            
-            const routePath = `M ${driverLeft} ${driverTop} C ${controlX1} ${controlY1}, ${controlX2} ${controlY2}, ${destLeft} ${destTop}`;
-            
-            return (
-              <>
-                {/* Active route - bright blue with strong glow like Google Maps */}
-                <path
-                  d={routePath}
-                  fill="none"
-                  stroke="#1E90FF"
-                  strokeWidth="8"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  style={{ 
-                    filter: 'drop-shadow(0 0 12px rgba(30, 144, 255, 1))',
-                  }}
-                />
-              </>
-            );
-          })()}
+        {/* Highlighted Route - Blue streets showing the optimal path */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }} viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Draw the complete route path along streets */}
+          <path
+            d={streetRoute.map((point, i) => 
+              `${i === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
+            ).join(' ')}
+            fill="none"
+            stroke="#1E90FF"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            style={{ 
+              filter: 'drop-shadow(0 0 2 rgba(30, 144, 255, 0.9))',
+            }}
+            vectorEffect="non-scaling-stroke"
+          />
         </svg>
 
-        {/* Current Location Pin - follows the route */}
+        {/* Current Location Pin - follows the street route */}
         <motion.div
           className="absolute"
           style={{
@@ -268,8 +289,8 @@ export default function MapNavigation() {
             zIndex: 10,
           }}
           animate={{
-            left: `${50 - (simulatedProgress / 100) * 2}%`,
-            top: `${85 - (simulatedProgress / 100) * 65}%`,
+            left: `${driverPos.x}%`,
+            top: `${driverPos.y}%`,
           }}
           transition={{ duration: 0.3, ease: "linear" }}
         >
