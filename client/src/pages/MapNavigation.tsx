@@ -37,6 +37,7 @@ export default function MapNavigation() {
 
   const [isBottomSheetExpanded, setIsBottomSheetExpanded] = useState(false);
   const [simulatedProgress, setSimulatedProgress] = useState(0);
+  const [isNearDestination, setIsNearDestination] = useState(false);
 
   const { data: trip } = useQuery<UpcomingTrip>({
     queryKey: [`/api/upcoming-trips/${tripId}`],
@@ -82,12 +83,25 @@ export default function MapNavigation() {
   useEffect(() => {
     const interval = setInterval(() => {
       setSimulatedProgress((prev) => {
-        if (prev >= 100) return 100;
+        if (prev >= 100) {
+          setIsNearDestination(true);
+          return 100;
+        }
+        // Consider "near" when progress is > 90%
+        if (prev >= 90) {
+          setIsNearDestination(true);
+        }
         return prev + 0.5;
       });
     }, 100);
 
     return () => clearInterval(interval);
+  }, [trip?.currentStopIndex]);
+
+  // Reset proximity when moving to next stop
+  useEffect(() => {
+    setIsNearDestination(false);
+    setSimulatedProgress(0);
   }, [trip?.currentStopIndex]);
 
   if (!trip || !currentPoint) {
@@ -301,15 +315,24 @@ export default function MapNavigation() {
                 )}
 
                 <Button
-                  className="w-full gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  className="w-full gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   size="lg"
                   onClick={() => completeStopMutation.mutate()}
-                  disabled={completeStopMutation.isPending}
+                  disabled={!isNearDestination || completeStopMutation.isPending}
                   data-testid="button-complete-stop"
                 >
                   <CheckCircle2 className="w-5 h-5" />
-                  {completeStopMutation.isPending ? "Completing..." : "Complete Stop"}
+                  {completeStopMutation.isPending 
+                    ? "Completing..." 
+                    : isNearDestination 
+                      ? "Complete Stop" 
+                      : "Arrive at Location First"}
                 </Button>
+                {!isNearDestination && (
+                  <p className="text-xs text-center text-muted-foreground mt-2">
+                    Navigate closer to the delivery point to complete this stop
+                  </p>
+                )}
               </div>
 
               {/* Next Stop Preview */}
