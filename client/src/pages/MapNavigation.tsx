@@ -137,30 +137,56 @@ export default function MapNavigation() {
           </svg>
         </div>
 
-        {/* Animated Route Path */}
-        <svg className="absolute inset-0 w-full h-full">
+        {/* Animated Route Path with realistic turns */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+          {/* Background route (gray) */}
+          <path
+            d="M 50 85 L 52 82 Q 54 79 56 77 L 58 74 Q 60 71 61 68 L 62 65 Q 63 62 62 59 L 61 56 Q 59 53 56 51 L 52 48 Q 48 46 45 45 L 42 44 Q 38 43 35 42 L 32 41 Q 28 40 26 38 L 24 36 Q 23 33 24 30 L 26 27 Q 29 24 32 23 L 36 22 Q 40 21 44 21 L 48 21 Q 51 21 53 20"
+            fill="none"
+            stroke="#e2e8f0"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          {/* Animated progress route (blue) */}
           <motion.path
-            d="M 50 80 Q 30 50 50 20"
+            d="M 50 85 L 52 82 Q 54 79 56 77 L 58 74 Q 60 71 61 68 L 62 65 Q 63 62 62 59 L 61 56 Q 59 53 56 51 L 52 48 Q 48 46 45 45 L 42 44 Q 38 43 35 42 L 32 41 Q 28 40 26 38 L 24 36 Q 23 33 24 30 L 26 27 Q 29 24 32 23 L 36 22 Q 40 21 44 21 L 48 21 Q 51 21 53 20"
             fill="none"
             stroke="#3b82f6"
-            strokeWidth="4"
-            strokeDasharray="10 5"
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: simulatedProgress / 100 }}
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="1000"
+            initial={{ strokeDashoffset: 1000 }}
+            animate={{ strokeDashoffset: 1000 - (simulatedProgress * 10) }}
             transition={{ duration: 0.5 }}
           />
+          {/* Direction arrows along the route */}
+          {[20, 40, 60, 80].map((progress, idx) => (
+            <motion.g
+              key={idx}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: simulatedProgress > progress - 5 ? 1 : 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <path
+                d={`M ${35 + idx * 5} ${80 - idx * 15} l -2 -4 l 2 1 l 2 -1 z`}
+                fill="#3b82f6"
+                opacity="0.6"
+              />
+            </motion.g>
+          ))}
         </svg>
 
-        {/* Current Location Pin (Animated) */}
+        {/* Current Location Pin (Animated along route) */}
         <motion.div
           className="absolute"
           style={{
-            left: '50%',
-            top: '80%',
             transform: 'translate(-50%, -50%)',
           }}
           animate={{
-            top: `${80 - (simulatedProgress * 0.6)}%`,
+            left: `${50 - (simulatedProgress * 0.03) + Math.sin(simulatedProgress * 0.15) * 5}%`,
+            top: `${85 - (simulatedProgress * 0.65)}%`,
           }}
           transition={{ duration: 0.5 }}
         >
@@ -176,7 +202,7 @@ export default function MapNavigation() {
         <div 
           className="absolute" 
           style={{
-            left: '50%',
+            left: '53%',
             top: '20%',
             transform: 'translate(-50%, -50%)',
           }}
