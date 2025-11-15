@@ -40,6 +40,7 @@ export default function TripDetails() {
       toast({
         title: "Trip Started!",
         description: "Navigate to your first stop",
+        duration: 2000,
       });
       setLocation(`/navigate/${tripId}`);
     },

@@ -433,8 +433,8 @@ export default function MapNavigation() {
 
                 {currentPoint.instructions && (
                   <div className="bg-orange-500/50 border border-orange-400/50 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-white mb-2">Tasks to do:</p>
-                    <p className="text-sm font-medium text-white" data-testid="text-instructions">
+                    <p className="text-xs font-bold text-white mb-2">Tasks to do:</p>
+                    <p className="text-sm font-bold text-white" data-testid="text-instructions">
                       {currentPoint.instructions}
                     </p>
                   </div>
