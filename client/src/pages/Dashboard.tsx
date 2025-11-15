@@ -118,37 +118,6 @@ export default function Dashboard() {
           date="Last Trip - Today"
         />
 
-        {/* Quick Actions - Modern Grid */}
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Star className="w-5 h-5 text-taabi-blue" />
-              Quick Access
-            </h2>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-              return (
-                <button
-                  key={action.label}
-                  onClick={() => setLocation(action.path)}
-                  className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${action.gradient} p-5 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]`}
-                  data-testid={`button-${action.label.toLowerCase().replace(/\s/g, '-')}`}
-                >
-                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300"></div>
-                  <div className="relative flex flex-col items-center gap-2">
-                    <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 transition-colors duration-300">
-                      <Icon className="w-6 h-6" />
-                    </div>
-                    <span className="font-semibold text-sm text-center">{action.label}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         {/* My Upcoming Trips */}
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -241,6 +210,37 @@ export default function Dashboard() {
               })}
             </div>
           )}
+        </div>
+
+        {/* Driver Center - Modern Grid */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold flex items-center gap-2">
+              <Star className="w-5 h-5 text-taabi-blue" />
+              Driver Center
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {quickActions.map((action) => {
+              const Icon = action.icon;
+              return (
+                <button
+                  key={action.label}
+                  onClick={() => setLocation(action.path)}
+                  className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${action.gradient} p-5 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]`}
+                  data-testid={`button-${action.label.toLowerCase().replace(/\s/g, '-')}`}
+                >
+                  <div className="absolute inset-0 bg-white/0 group-hover:bg-white/10 transition-colors duration-300"></div>
+                  <div className="relative flex flex-col items-center gap-2">
+                    <div className="p-3 rounded-xl bg-white/20 backdrop-blur-sm group-hover:bg-white/30 transition-colors duration-300">
+                      <Icon className="w-6 h-6" />
+                    </div>
+                    <span className="font-semibold text-sm text-center">{action.label}</span>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </div>
 
         {/* Performance Metrics - Enhanced */}
