@@ -1,10 +1,10 @@
-import { Home, Map, MapPin, Users, User } from "lucide-react";
+import { Home, Truck, MapPin, Users, User } from "lucide-react";
 import { useLocation, Link } from "wouter";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { path: "/", icon: Home, label: "Home" },
-  { path: "/route", icon: Map, label: "Route" },
+  { path: "/my-trips", icon: Truck, label: "My Trips" },
   { path: "/nearby", icon: MapPin, label: "Nearby" },
   { path: "/community", icon: Users, label: "Community" },
   { path: "/profile", icon: User, label: "Profile" },

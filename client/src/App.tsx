@@ -9,12 +9,12 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { RoadAlertsNotifier } from "@/components/RoadAlertsNotifier";
 import Dashboard from "@/pages/Dashboard";
 import RoutePlanner from "@/pages/RoutePlanner";
+import MyTrips from "@/pages/MyTrips";
 import NearbyEssentials from "@/pages/NearbyEssentials";
 import Leaderboard from "@/pages/Leaderboard";
 import Rewards from "@/pages/Rewards";
 import Community from "@/pages/Community";
 import Profile from "@/pages/Profile";
-import Login from "@/pages/Login";
 import TripSummary from "@/pages/TripSummary";
 import Wellness from "@/pages/Wellness";
 import SupportHub from "@/pages/SupportHub";
@@ -22,22 +22,23 @@ import LearningHub from "@/pages/LearningHub";
 import TruckChecklist from "@/pages/TruckChecklist";
 import TripDetails from "@/pages/TripDetails";
 import MapNavigation from "@/pages/MapNavigation";
+import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 
 function ProtectedRoute({ component: Component, path }: { component: any; path?: string }) {
   const { isAuthenticated } = useAuth();
   const [, setLocation] = useLocation();
-  
+
   useEffect(() => {
     if (!isAuthenticated) {
       setLocation("/login");
     }
   }, [isAuthenticated, setLocation]);
-  
+
   if (!isAuthenticated) {
     return null;
   }
-  
+
   return <Component />;
 }
 
@@ -57,6 +58,9 @@ function Router() {
         </Route>
         <Route path="/route">
           <ProtectedRoute component={RoutePlanner} path="/route" />
+        </Route>
+        <Route path="/my-trips">
+          <ProtectedRoute component={MyTrips} path="/my-trips" />
         </Route>
         <Route path="/nearby">
           <ProtectedRoute component={NearbyEssentials} path="/nearby" />
