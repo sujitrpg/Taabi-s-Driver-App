@@ -24,6 +24,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { UpcomingTrip, DeliveryPoint } from "@shared/schema";
 import { format } from "date-fns";
 import shubhamImage from "@/assets/images/shubham.jpeg";
+import prakharPhotoAttached from "/attached_assets/1586702192238_1763053351246.jpeg";
 
 export default function Dashboard() {
   const [, setLocation] = useLocation();
@@ -61,7 +62,7 @@ export default function Dashboard() {
   const topDrivers = [
     { rank: 1, name: "Sujit Soni", score: 98, points: 3450, avatarUrl: undefined, level: "Fleet Legend" },
     { rank: 2, name: "Shubham Agarwal", score: 95, points: 3200, avatarUrl: shubhamImage, level: "Pro Driver" },
-    { rank: 3, name: "Prakhar Raghuvansh", score: 92, points: 3000, avatarUrl: undefined, level: "Pro Driver" },
+    { rank: 3, name: "Prakhar Raghuvansh", score: 92, points: 3000, avatarUrl: prakharPhotoAttached, level: "Pro Driver" },
   ];
 
   const handleSOS = () => {
