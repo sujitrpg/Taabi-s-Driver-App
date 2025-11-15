@@ -123,154 +123,88 @@ export default function MapNavigation() {
 
   return (
     <div className="h-screen relative overflow-hidden bg-slate-100">
-      {/* High-tech Dark Map Background */}
-      <div className="absolute inset-0 bg-slate-950">
-        {/* Grid-based Street Network */}
-        <svg className="absolute inset-0 w-full h-full opacity-100">
-          <defs>
-            {/* Glow filter for roads */}
-            <filter id="road-glow" x="-50%" y="-50%" width="200%" height="200%">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-            
-            {/* Active route glow */}
-            <filter id="active-glow" x="-100%" y="-100%" width="300%" height="300%">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          
-          {/* Horizontal roads */}
-          {[15, 25, 35, 45, 55, 65, 75, 85].map((y, idx) => (
+      {/* Google Maps Style Background */}
+      <div className="absolute inset-0 bg-gray-100">
+        {/* Street Grid */}
+        <svg className="absolute inset-0 w-full h-full">
+          {/* Horizontal streets */}
+          {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((y) => (
             <line
-              key={`h-${idx}`}
+              key={`h-${y}`}
               x1="0"
               y1={`${y}%`}
               x2="100%"
               y2={`${y}%`}
-              stroke="#1e293b"
-              strokeWidth="3"
-              filter="url(#road-glow)"
+              stroke="#e5e7eb"
+              strokeWidth="8"
             />
           ))}
           
-          {/* Vertical roads */}
-          {[15, 25, 35, 45, 55, 65, 75, 85].map((x, idx) => (
+          {/* Vertical streets */}
+          {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((x) => (
             <line
-              key={`v-${idx}`}
+              key={`v-${x}`}
               x1={`${x}%`}
               y1="0"
               x2={`${x}%`}
               y2="100%"
-              stroke="#1e293b"
-              strokeWidth="3"
-              filter="url(#road-glow)"
+              stroke="#e5e7eb"
+              strokeWidth="8"
             />
           ))}
           
-          {/* Subtle building blocks */}
-          {Array.from({ length: 40 }).map((_, idx) => {
-            const x = (idx % 8) * 12.5 + 2 + Math.random() * 8;
-            const y = Math.floor(idx / 8) * 12.5 + 2 + Math.random() * 8;
-            const w = 3 + Math.random() * 4;
-            const h = 3 + Math.random() * 4;
+          {/* Street labels */}
+          <text x="5%" y="22%" fill="#9ca3af" fontSize="10" fontWeight="500">Main St</text>
+          <text x="5%" y="42%" fill="#9ca3af" fontSize="10" fontWeight="500">Park Ave</text>
+          <text x="5%" y="62%" fill="#9ca3af" fontSize="10" fontWeight="500">Oak Rd</text>
+          
+          {/* Buildings */}
+          {Array.from({ length: 30 }).map((_, idx) => {
+            const gridX = (idx % 8) * 11 + 2;
+            const gridY = Math.floor(idx / 8) * 11 + 2;
             return (
               <rect
                 key={`building-${idx}`}
-                x={`${x}%`}
-                y={`${y}%`}
-                width={`${w}%`}
-                height={`${h}%`}
-                fill="#0f172a"
-                opacity="0.6"
+                x={`${gridX}%`}
+                y={`${gridY}%`}
+                width="6%"
+                height="6%"
+                fill="#d1d5db"
+                stroke="#9ca3af"
+                strokeWidth="0.5"
               />
             );
           })}
         </svg>
 
-        {/* Active Route Path */}
+        {/* Active Route */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none">
-          {/* Main route - linear grid-based path */}
+          {/* Route path with turns */}
           <path
-            d="M 50 85 L 50 75 L 45 75 L 45 65 L 35 65 L 35 55 L 25 55 L 25 45 L 35 45 L 35 35 L 45 35 L 45 25 L 50 25 L 50 20"
+            d="M 50 85 L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20"
             fill="none"
-            stroke="#334155"
-            strokeWidth="5"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
-            opacity="0.5"
+            stroke="#1967D2"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
           
-          {/* Animated active route */}
+          {/* Progress indicator */}
           <motion.path
-            d="M 50 85 L 50 75 L 45 75 L 45 65 L 35 65 L 35 55 L 25 55 L 25 45 L 35 45 L 35 35 L 45 35 L 45 25 L 50 25 L 50 20"
+            d="M 50 85 L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20"
             fill="none"
-            stroke="url(#route-gradient)"
-            strokeWidth="5"
-            strokeLinecap="square"
-            strokeLinejoin="miter"
-            filter="url(#active-glow)"
-            strokeDasharray="500"
-            initial={{ strokeDashoffset: 500 }}
-            animate={{ strokeDashoffset: 500 - (simulatedProgress * 5) }}
+            stroke="#4285F4"
+            strokeWidth="6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeDasharray="400"
+            initial={{ strokeDashoffset: 400 }}
+            animate={{ strokeDashoffset: 400 - (simulatedProgress * 4) }}
             transition={{ duration: 0.5 }}
           />
-          
-          <defs>
-            <linearGradient id="route-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#3b82f6" stopOpacity="1" />
-              <stop offset="50%" stopColor="#06b6d4" stopOpacity="1" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="1" />
-            </linearGradient>
-          </defs>
-          
-          {/* Animated flow dots along route */}
-          {simulatedProgress > 10 && (
-            <>
-              {[0, 1, 2, 3, 4].map((idx) => {
-                const offset = (simulatedProgress + idx * 20) % 100;
-                return (
-                  <motion.circle
-                    key={idx}
-                    r="2"
-                    fill="#06b6d4"
-                    filter="url(#active-glow)"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: [0, 1, 0] }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      delay: idx * 0.4,
-                    }}
-                  >
-                    <animateMotion
-                      dur="10s"
-                      repeatCount="indefinite"
-                      begin={`${idx * 0.4}s`}
-                    >
-                      <mpath href="#route-path" />
-                    </animateMotion>
-                  </motion.circle>
-                );
-              })}
-              <path
-                id="route-path"
-                d="M 50 85 L 50 75 L 45 75 L 45 65 L 35 65 L 35 55 L 25 55 L 25 45 L 35 45 L 35 35 L 45 35 L 45 25 L 50 25 L 50 20"
-                fill="none"
-                opacity="0"
-              />
-            </>
-          )}
         </svg>
 
-        {/* Current Location Pin - High-tech glowing marker */}
+        {/* Current Location Pin */}
         <motion.div
           className="absolute"
           style={{
@@ -278,91 +212,37 @@ export default function MapNavigation() {
           }}
           animate={{
             left: simulatedProgress < 15 ? '50%' :
-                  simulatedProgress < 30 ? '45%' :
-                  simulatedProgress < 45 ? '35%' :
-                  simulatedProgress < 60 ? '25%' :
-                  simulatedProgress < 75 ? '35%' :
-                  simulatedProgress < 90 ? '45%' : '50%',
+                  simulatedProgress < 35 ? '50%' :
+                  simulatedProgress < 55 ? '40%' :
+                  simulatedProgress < 75 ? '30%' :
+                  simulatedProgress < 90 ? '50%' : '50%',
             top: simulatedProgress < 15 ? '85%' :
-                 simulatedProgress < 30 ? '75%' :
-                 simulatedProgress < 45 ? '65%' :
-                 simulatedProgress < 60 ? '55%' :
-                 simulatedProgress < 75 ? '45%' :
-                 simulatedProgress < 90 ? '35%' : '25%',
+                 simulatedProgress < 35 ? '70%' :
+                 simulatedProgress < 55 ? '50%' :
+                 simulatedProgress < 75 ? '30%' :
+                 simulatedProgress < 90 ? '30%' : '20%',
           }}
           transition={{ duration: 0.5, ease: "linear" }}
         >
           <div className="relative">
-            {/* Outer pulsing ring */}
-            <div className="absolute -inset-8 bg-cyan-500/30 rounded-full blur-xl animate-pulse"></div>
-            <div className="absolute -inset-6 bg-cyan-400/40 rounded-full blur-lg animate-ping"></div>
-            {/* Middle ring */}
-            <div className="absolute -inset-3 bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full opacity-50"></div>
-            {/* Core marker */}
-            <div className="relative w-10 h-10 bg-gradient-to-br from-blue-600 via-cyan-500 to-blue-600 rounded-full border-2 border-cyan-300 shadow-2xl flex items-center justify-center backdrop-blur-sm">
-              <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-full"></div>
-              <Navigation className="w-5 h-5 text-white drop-shadow-lg relative z-10" />
+            <div className="absolute -inset-3 bg-blue-500/20 rounded-full"></div>
+            <div className="w-8 h-8 bg-blue-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
+              <Navigation className="w-4 h-4 text-white" />
             </div>
-            {/* Scan line effect */}
-            <motion.div
-              className="absolute -inset-4 border-2 border-cyan-400/50 rounded-full"
-              animate={{
-                scale: [1, 1.5],
-                opacity: [0.5, 0],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeOut",
-              }}
-            />
           </div>
         </motion.div>
 
-        {/* Destination Pin - High-tech glowing marker */}
+        {/* Destination Pin */}
         <div 
           className="absolute" 
           style={{
             left: '50%',
             top: '20%',
-            transform: 'translate(-50%, -50%)',
+            transform: 'translate(-50%, -100%)',
           }}
         >
           <div className="relative">
-            {/* Outer glow */}
-            <div className="absolute -inset-8 bg-emerald-500/30 rounded-full blur-xl animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-            <div className="absolute -inset-6 bg-emerald-400/40 rounded-full blur-lg"></div>
-            {/* Hexagonal frame */}
-            <motion.div
-              className="relative"
-              animate={{
-                y: [0, -8, 0],
-              }}
-              transition={{
-                duration: 3,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-            >
-              <div className="relative w-12 h-12 bg-gradient-to-br from-emerald-600 via-green-500 to-emerald-600 rounded-lg border-2 border-emerald-300 shadow-2xl flex items-center justify-center backdrop-blur-sm transform rotate-45">
-                <div className="absolute inset-0 bg-gradient-to-br from-white/30 to-transparent rounded-lg"></div>
-                <MapPin className="w-7 h-7 text-white drop-shadow-lg relative z-10 -rotate-45" fill="currentColor" />
-              </div>
-              {/* Animated rings */}
-              <motion.div
-                className="absolute -inset-3 border-2 border-emerald-400/60 rounded-lg transform rotate-45"
-                animate={{
-                  scale: [1, 1.3],
-                  opacity: [0.6, 0],
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                  delay: 0.5,
-                }}
-              />
-            </motion.div>
+            <MapPin className="w-10 h-10 text-red-600" fill="currentColor" />
           </div>
         </div>
       </div>
