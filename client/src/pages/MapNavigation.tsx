@@ -128,7 +128,7 @@ export default function MapNavigation() {
         {/* Street Grid */}
         <svg className="absolute inset-0 w-full h-full">
           {/* Horizontal streets */}
-          {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((y) => (
+          {[20, 40, 60, 80].map((y) => (
             <line
               key={`h-${y}`}
               x1="0"
@@ -141,7 +141,7 @@ export default function MapNavigation() {
           ))}
           
           {/* Vertical streets */}
-          {[10, 20, 30, 40, 50, 60, 70, 80, 90].map((x) => (
+          {[20, 40, 60, 80].map((x) => (
             <line
               key={`v-${x}`}
               x1={`${x}%`}
@@ -177,14 +177,14 @@ export default function MapNavigation() {
           })}
         </svg>
 
-        {/* Active Route */}
+        {/* Active Route - Highlighted Shortest Path */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none">
-          {/* Remaining path (gray - already traveled) */}
+          {/* Already traveled path (gray) */}
           <motion.path
             d="M 50 85 L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20"
             fill="none"
             stroke="#d1d5db"
-            strokeWidth="6"
+            strokeWidth="8"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray="400"
@@ -193,18 +193,19 @@ export default function MapNavigation() {
             transition={{ duration: 0.5 }}
           />
           
-          {/* Blue path from driver to destination (reduces as driver approaches) */}
+          {/* Highlighted shortest route (bright blue with glow - reduces as driver approaches) */}
           <motion.path
             d="M 50 85 L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20"
             fill="none"
-            stroke="#4285F4"
-            strokeWidth="6"
+            stroke="#1E90FF"
+            strokeWidth="8"
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray="400"
             initial={{ strokeDashoffset: 0 }}
             animate={{ strokeDashoffset: (simulatedProgress * 4) }}
             transition={{ duration: 0.5 }}
+            style={{ filter: 'drop-shadow(0 0 6px #1E90FF)' }}
           />
         </svg>
 
@@ -286,18 +287,24 @@ export default function MapNavigation() {
           transition={{ type: "spring", damping: 30, stiffness: 300 }}
         >
           <Card className="rounded-t-3xl shadow-2xl overflow-hidden">
-            {/* Drag Handle */}
+            {/* Drag Handle / Reached Indicator */}
             <button
               className="w-full py-3 flex justify-center hover:bg-muted/50 transition-colors"
               onClick={() => setIsBottomSheetExpanded(!isBottomSheetExpanded)}
               data-testid="button-expand-sheet"
             >
-              <motion.div
-                animate={{ rotate: isBottomSheetExpanded ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ChevronUp className="w-6 h-6 text-muted-foreground" />
-              </motion.div>
+              {isNearDestination ? (
+                <motion.div
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ type: "spring", stiffness: 200, damping: 15 }}
+                  className="flex items-center justify-center w-20 h-8 bg-green-500 rounded-full shadow-lg"
+                >
+                  <span className="text-white font-bold text-sm">Reached</span>
+                </motion.div>
+              ) : (
+                <div className="w-12 h-1 bg-muted-foreground/30 rounded-full" />
+              )}
             </button>
 
             <div className="p-4 space-y-4 max-h-[80vh] overflow-y-auto pb-6">
