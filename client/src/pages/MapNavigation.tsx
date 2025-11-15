@@ -16,11 +16,25 @@ import {
   Factory,
   Home,
   Store,
-  Warehouse
+  Warehouse,
+  Camera,
+  X
 } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
 
 const locationIcons = {
   warehouse: Warehouse,
@@ -38,6 +52,12 @@ export default function MapNavigation() {
   const [isBottomSheetExpanded, setIsBottomSheetExpanded] = useState(false);
   const [simulatedProgress, setSimulatedProgress] = useState(0);
   const [isNearDestination, setIsNearDestination] = useState(false);
+  
+  // E-Proof of Delivery states
+  const [showProofDialog, setShowProofDialog] = useState(false);
+  const [proofStep, setProofStep] = useState<'otp' | 'camera'>('otp');
+  const [otpValue, setOtpValue] = useState('');
+  const [capturedPhoto, setCapturedPhoto] = useState(false);
 
   const { data: trip } = useQuery<UpcomingTrip>({
     queryKey: [`/api/upcoming-trips/${tripId}`],
@@ -57,6 +77,12 @@ export default function MapNavigation() {
       queryClient.invalidateQueries({ queryKey: [`/api/upcoming-trips/${tripId}`] });
       queryClient.invalidateQueries({ queryKey: [`/api/delivery-points/trip/${tripId}`] });
       
+      // Reset proof dialog
+      setShowProofDialog(false);
+      setProofStep('otp');
+      setOtpValue('');
+      setCapturedPhoto(false);
+      
       if (data.allCompleted) {
         toast({
           title: "Trip Completed!",
@@ -75,6 +101,32 @@ export default function MapNavigation() {
       }
     },
   });
+  
+  const handleCompleteStopClick = () => {
+    setShowProofDialog(true);
+    setProofStep('otp');
+    setOtpValue('');
+    setCapturedPhoto(false);
+  };
+  
+  const handleOtpSubmit = () => {
+    if (otpValue.length === 4) {
+      setProofStep('camera');
+    } else {
+      toast({
+        title: "Invalid OTP",
+        description: "Please enter a 4-digit OTP",
+        variant: "destructive",
+      });
+    }
+  };
+  
+  const handleCameraCapture = () => {
+    setCapturedPhoto(true);
+    setTimeout(() => {
+      completeStopMutation.mutate();
+    }, 500);
+  };
 
   const currentPoint = deliveryPoints[trip?.currentStopIndex ?? 0];
   const nextPoint = deliveryPoints[(trip?.currentStopIndex ?? 0) + 1];
@@ -122,155 +174,102 @@ export default function MapNavigation() {
   const totalStops = deliveryPoints.length;
 
   return (
-    <div className="h-screen relative overflow-hidden bg-slate-100">
-      {/* Google Maps Style Background */}
-      <div className="absolute inset-0 bg-gray-100">
-        {/* Street Grid */}
+    <div className="h-screen relative overflow-hidden" style={{ backgroundColor: '#1a2332' }}>
+      {/* Dark Google Maps Style Background */}
+      <div className="absolute inset-0" style={{ backgroundColor: '#1a2332' }}>
+        {/* Street Grid - Dark theme */}
         <svg className="absolute inset-0 w-full h-full">
           {/* Horizontal streets */}
-          {[20, 40, 60, 80].map((y) => (
+          {[15, 30, 45, 60, 75].map((y) => (
             <line
               key={`h-${y}`}
               x1="0"
               y1={`${y}%`}
               x2="100%"
               y2={`${y}%`}
-              stroke="#e5e7eb"
-              strokeWidth="8"
+              stroke="#2d3748"
+              strokeWidth="2"
             />
           ))}
           
           {/* Vertical streets */}
-          {[20, 40, 60, 80].map((x) => (
+          {[15, 30, 45, 60, 75].map((x) => (
             <line
               key={`v-${x}`}
               x1={`${x}%`}
               y1="0"
               x2={`${x}%`}
               y2="100%"
-              stroke="#e5e7eb"
-              strokeWidth="8"
+              stroke="#2d3748"
+              strokeWidth="2"
             />
           ))}
           
-          {/* Street labels */}
-          <text x="5%" y="22%" fill="#9ca3af" fontSize="10" fontWeight="500">Main St</text>
-          <text x="5%" y="42%" fill="#9ca3af" fontSize="10" fontWeight="500">Park Ave</text>
-          <text x="5%" y="62%" fill="#9ca3af" fontSize="10" fontWeight="500">Oak Rd</text>
-          
-          {/* Buildings */}
-          {Array.from({ length: 30 }).map((_, idx) => {
-            const gridX = (idx % 8) * 11 + 2;
-            const gridY = Math.floor(idx / 8) * 11 + 2;
-            return (
-              <rect
-                key={`building-${idx}`}
-                x={`${gridX}%`}
-                y={`${gridY}%`}
-                width="6%"
-                height="6%"
-                fill="#d1d5db"
-                stroke="#9ca3af"
-                strokeWidth="0.5"
-              />
-            );
-          })}
+          {/* Area labels with dark theme text */}
+          <text x="8%" y="25%" fill="#718096" fontSize="11" fontWeight="500">Residential</text>
+          <text x="65%" y="55%" fill="#718096" fontSize="11" fontWeight="500">Commercial</text>
         </svg>
 
-        {/* Active Route - Highlighted Shortest Path */}
-        <svg className="absolute inset-0 w-full h-full pointer-events-none">
-          {/* Calculate dynamic path based on driver position */}
+        {/* Optimized Route Path - Clean bright blue like Google Maps */}
+        <svg className="absolute inset-0 w-full h-full pointer-events-none" style={{ zIndex: 5 }}>
           {(() => {
-            const driverLeft = simulatedProgress < 15 ? 50 :
-                              simulatedProgress < 35 ? 50 :
-                              simulatedProgress < 55 ? 40 :
-                              simulatedProgress < 75 ? 30 :
-                              simulatedProgress < 90 ? 50 : 50;
-            const driverTop = simulatedProgress < 15 ? 85 :
-                             simulatedProgress < 35 ? 70 :
-                             simulatedProgress < 55 ? 50 :
-                             simulatedProgress < 75 ? 30 :
-                             simulatedProgress < 90 ? 30 : 20;
+            // Define the full optimized route path
+            const fullRoutePath = "M 50 85 L 48 80 L 46 75 L 44 70 L 42 65 L 40 60 L 38 55 L 36 50 L 35 45 L 36 40 L 38 35 L 40 30 L 42 27 L 44 24 L 46 22 L 48 21 L 50 20";
             
-            const destLeft = 50;
-            const destTop = 20;
-            
-            // Create path from current driver position to destination
-            let pathD = `M ${driverLeft} ${driverTop}`;
-            
-            // Add intermediate waypoints based on progress
-            if (simulatedProgress < 15) {
-              pathD += ` L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20`;
-            } else if (simulatedProgress < 35) {
-              pathD += ` L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20`;
-            } else if (simulatedProgress < 55) {
-              pathD += ` L 40 50 L 30 50 L 30 30 L 50 30 L 50 20`;
-            } else if (simulatedProgress < 75) {
-              pathD += ` L 30 30 L 50 30 L 50 20`;
-            } else if (simulatedProgress < 90) {
-              pathD += ` L 50 20`;
-            } else {
-              pathD += ` L 50 20`;
-            }
+            // Calculate how much of the route has been completed based on progress
+            const totalPathLength = 400; // approximate path length
+            const completedLength = (simulatedProgress / 100) * totalPathLength;
             
             return (
               <>
-                {/* Already traveled path (gray) - from start to current position */}
-                <motion.path
-                  d="M 50 85 L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20"
+                {/* Full route path - gray (unvisited portion) */}
+                <path
+                  d={fullRoutePath}
                   fill="none"
-                  stroke="#d1d5db"
-                  strokeWidth="8"
+                  stroke="#4a5568"
+                  strokeWidth="5"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  strokeDasharray="400"
-                  initial={{ strokeDashoffset: 0 }}
-                  animate={{ strokeDashoffset: -(simulatedProgress * 4) }}
-                  transition={{ duration: 0.5 }}
+                  opacity="0.6"
                 />
                 
-                {/* Highlighted shortest route (bright blue with glow) - from driver to destination */}
+                {/* Active route ahead - bright blue with glow like Google Maps */}
                 <motion.path
-                  d={pathD}
+                  d={fullRoutePath}
                   fill="none"
                   stroke="#1E90FF"
-                  strokeWidth="8"
+                  strokeWidth="6"
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  style={{ filter: 'drop-shadow(0 0 6px #1E90FF)' }}
-                  initial={{ pathLength: 0 }}
-                  animate={{ pathLength: 1 }}
-                  transition={{ duration: 0.5 }}
+                  strokeDasharray={totalPathLength}
+                  strokeDashoffset={-completedLength}
+                  style={{ 
+                    filter: 'drop-shadow(0 0 8px rgba(30, 144, 255, 0.8))',
+                  }}
+                  transition={{ duration: 0.3 }}
                 />
               </>
             );
           })()}
         </svg>
 
-        {/* Current Location Pin */}
+        {/* Current Location Pin - follows the route */}
         <motion.div
           className="absolute"
           style={{
             transform: 'translate(-50%, -50%)',
+            zIndex: 10,
           }}
           animate={{
-            left: simulatedProgress < 15 ? '50%' :
-                  simulatedProgress < 35 ? '50%' :
-                  simulatedProgress < 55 ? '40%' :
-                  simulatedProgress < 75 ? '30%' :
-                  simulatedProgress < 90 ? '50%' : '50%',
-            top: simulatedProgress < 15 ? '85%' :
-                 simulatedProgress < 35 ? '70%' :
-                 simulatedProgress < 55 ? '50%' :
-                 simulatedProgress < 75 ? '30%' :
-                 simulatedProgress < 90 ? '30%' : '20%',
+            left: `${50 - (simulatedProgress / 100) * 2}%`,
+            top: `${85 - (simulatedProgress / 100) * 65}%`,
           }}
-          transition={{ duration: 0.5, ease: "linear" }}
+          transition={{ duration: 0.3, ease: "linear" }}
         >
           <div className="relative">
-            <div className="absolute -inset-3 bg-blue-500/20 rounded-full"></div>
-            <div className="w-8 h-8 bg-blue-600 rounded-full border-3 border-white shadow-lg flex items-center justify-center">
-              <Navigation className="w-4 h-4 text-white" />
+            <div className="absolute -inset-4 bg-blue-500/30 rounded-full animate-pulse"></div>
+            <div className="w-10 h-10 bg-white rounded-full border-4 border-blue-500 shadow-xl flex items-center justify-center" style={{ boxShadow: '0 0 20px rgba(30, 144, 255, 0.6)' }}>
+              <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
             </div>
           </div>
         </motion.div>
@@ -282,10 +281,15 @@ export default function MapNavigation() {
             left: '50%',
             top: '20%',
             transform: 'translate(-50%, -100%)',
+            zIndex: 10,
           }}
         >
           <div className="relative">
-            <MapPin className="w-10 h-10 text-red-600" fill="currentColor" />
+            <div className="absolute -inset-2 bg-red-500/20 rounded-full"></div>
+            <MapPin className="w-12 h-12 text-red-500" fill="currentColor" style={{ filter: 'drop-shadow(0 4px 12px rgba(239, 68, 68, 0.5))' }} />
+            <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-full mb-2 bg-white dark:bg-gray-800 px-2 py-1 rounded-md shadow-lg text-xs font-semibold whitespace-nowrap">
+              {currentPoint.name}
+            </div>
           </div>
         </div>
       </div>
@@ -417,7 +421,7 @@ export default function MapNavigation() {
                 <Button
                   className="w-full gap-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   size="lg"
-                  onClick={() => completeStopMutation.mutate()}
+                  onClick={handleCompleteStopClick}
                   disabled={!isNearDestination || completeStopMutation.isPending}
                   data-testid="button-complete-stop"
                 >
@@ -462,6 +466,122 @@ export default function MapNavigation() {
           </Card>
         </motion.div>
       </AnimatePresence>
+      
+      {/* E-Proof of Delivery Dialog */}
+      <Dialog open={showProofDialog} onOpenChange={setShowProofDialog}>
+        <DialogContent className="sm:max-w-md" data-testid="dialog-proof-delivery">
+          <DialogHeader>
+            <DialogTitle>
+              {proofStep === 'otp' ? 'Enter Delivery OTP' : 'Capture Photo Proof'}
+            </DialogTitle>
+            <DialogDescription>
+              {proofStep === 'otp' 
+                ? 'Please ask the recipient for the 4-digit OTP to confirm delivery.'
+                : 'Take a photo of the delivered goods as proof of delivery.'}
+            </DialogDescription>
+          </DialogHeader>
+          
+          {proofStep === 'otp' ? (
+            <div className="space-y-6 py-4">
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={4}
+                  value={otpValue}
+                  onChange={setOtpValue}
+                  data-testid="input-otp"
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              
+              <div className="text-center text-sm text-muted-foreground">
+                For demo purposes, enter any 4-digit code
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowProofDialog(false)}
+                  className="flex-1"
+                  data-testid="button-cancel-otp"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleOtpSubmit}
+                  disabled={otpValue.length !== 4}
+                  className="flex-1"
+                  data-testid="button-submit-otp"
+                >
+                  Continue
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-6 py-4">
+              <div className="flex flex-col items-center justify-center gap-4 py-8">
+                {!capturedPhoto ? (
+                  <>
+                    <motion.div
+                      className="relative w-40 h-40 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center"
+                      animate={{ 
+                        scale: [1, 1.05, 1],
+                      }}
+                      transition={{ 
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut"
+                      }}
+                    >
+                      <Camera className="w-20 h-20 text-white" />
+                      <div className="absolute inset-0 rounded-2xl border-4 border-white/30 animate-pulse"></div>
+                    </motion.div>
+                    
+                    <Button
+                      onClick={handleCameraCapture}
+                      size="lg"
+                      className="gap-2"
+                      data-testid="button-capture-photo"
+                    >
+                      <Camera className="w-5 h-5" />
+                      Capture Photo
+                    </Button>
+                  </>
+                ) : (
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    transition={{ type: "spring", stiffness: 200 }}
+                    className="flex flex-col items-center gap-4"
+                  >
+                    <div className="w-40 h-40 rounded-2xl bg-green-500 flex items-center justify-center">
+                      <CheckCircle2 className="w-20 h-20 text-white" />
+                    </div>
+                    <p className="text-lg font-semibold text-green-600">Photo Captured!</p>
+                    <p className="text-sm text-muted-foreground">Completing delivery...</p>
+                  </motion.div>
+                )}
+              </div>
+              
+              {!capturedPhoto && (
+                <Button
+                  variant="outline"
+                  onClick={() => setProofStep('otp')}
+                  className="w-full"
+                  data-testid="button-back-to-otp"
+                >
+                  Back to OTP
+                </Button>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
