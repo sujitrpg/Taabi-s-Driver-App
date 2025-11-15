@@ -179,17 +179,21 @@ export default function MapNavigation() {
 
         {/* Active Route */}
         <svg className="absolute inset-0 w-full h-full pointer-events-none">
-          {/* Route path with turns */}
-          <path
+          {/* Remaining path (gray - already traveled) */}
+          <motion.path
             d="M 50 85 L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20"
             fill="none"
-            stroke="#1967D2"
+            stroke="#d1d5db"
             strokeWidth="6"
             strokeLinecap="round"
             strokeLinejoin="round"
+            strokeDasharray="400"
+            initial={{ strokeDashoffset: 0 }}
+            animate={{ strokeDashoffset: -(simulatedProgress * 4) }}
+            transition={{ duration: 0.5 }}
           />
           
-          {/* Progress indicator */}
+          {/* Blue path from driver to destination (reduces as driver approaches) */}
           <motion.path
             d="M 50 85 L 50 70 L 40 70 L 40 50 L 30 50 L 30 30 L 50 30 L 50 20"
             fill="none"
@@ -198,8 +202,8 @@ export default function MapNavigation() {
             strokeLinecap="round"
             strokeLinejoin="round"
             strokeDasharray="400"
-            initial={{ strokeDashoffset: 400 }}
-            animate={{ strokeDashoffset: 400 - (simulatedProgress * 4) }}
+            initial={{ strokeDashoffset: 0 }}
+            animate={{ strokeDashoffset: (simulatedProgress * 4) }}
             transition={{ duration: 0.5 }}
           />
         </svg>
@@ -320,22 +324,6 @@ export default function MapNavigation() {
                   />
                 </div>
               </Card>
-
-              {/* I Reached Destination Button */}
-              {!isNearDestination && (
-                <Button
-                  className="w-full gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
-                  size="lg"
-                  onClick={() => {
-                    setSimulatedProgress(100);
-                    setIsNearDestination(true);
-                  }}
-                  data-testid="button-reached-destination"
-                >
-                  <MapPin className="w-5 h-5" />
-                  I Reached the Destination
-                </Button>
-              )}
 
               {/* Current Stop Details */}
               <div className="space-y-3">
