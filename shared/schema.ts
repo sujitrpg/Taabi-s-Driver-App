@@ -362,3 +362,50 @@ export const insertChecklistCompletionSchema = createInsertSchema(checklistCompl
 
 export type InsertChecklistCompletion = z.infer<typeof insertChecklistCompletionSchema>;
 export type ChecklistCompletion = typeof checklistCompletions.$inferSelect;
+
+// ============ UPCOMING TRIPS (Fleet-Assigned) ============
+export const upcomingTrips = pgTable("upcoming_trips", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  driverId: varchar("driver_id").notNull().references(() => drivers.id),
+  title: text("title").notNull(),
+  scheduledTime: timestamp("scheduled_time").notNull(),
+  startLocation: text("start_location").notNull(),
+  startLat: real("start_lat").notNull(),
+  startLng: real("start_lng").notNull(),
+  endLocation: text("end_location").notNull(),
+  endLat: real("end_lat").notNull(),
+  endLng: real("end_lng").notNull(),
+  totalStops: integer("total_stops").notNull(),
+  status: text("status").notNull().default("upcoming"), // upcoming, in_progress, completed
+  currentStopIndex: integer("current_stop_index").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const insertUpcomingTripSchema = createInsertSchema(upcomingTrips).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertUpcomingTrip = z.infer<typeof insertUpcomingTripSchema>;
+export type UpcomingTrip = typeof upcomingTrips.$inferSelect;
+
+// ============ DELIVERY POINTS ============
+export const deliveryPoints = pgTable("delivery_points", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tripId: varchar("trip_id").notNull().references(() => upcomingTrips.id),
+  orderIndex: integer("order_index").notNull(), // 0, 1, 2, etc
+  locationType: text("location_type").notNull(), // warehouse, shop, factory, home
+  name: text("name").notNull(),
+  address: text("address").notNull(),
+  latitude: real("latitude").notNull(),
+  longitude: real("longitude").notNull(),
+  status: text("status").notNull().default("pending"), // pending, in_progress, completed
+  completedAt: timestamp("completed_at"),
+});
+
+export const insertDeliveryPointSchema = createInsertSchema(deliveryPoints).omit({
+  id: true,
+});
+
+export type InsertDeliveryPoint = z.infer<typeof insertDeliveryPointSchema>;
+export type DeliveryPoint = typeof deliveryPoints.$inferSelect;
