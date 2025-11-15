@@ -50,7 +50,7 @@ export default function MyTrips() {
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold">My Trips</h1>
+            <h1 className="text-2xl font-bold">Trips</h1>
             <p className="text-white/90 text-sm">All assigned trips</p>
           </div>
           <Truck className="w-8 h-8 opacity-80" />

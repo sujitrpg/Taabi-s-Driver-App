@@ -271,31 +271,7 @@ export default function MapNavigation() {
         </div>
       </div>
 
-      {/* Simulated Progress Bar */}
-      <div className="absolute top-20 left-4 right-4 z-20">
-        <Card className="p-3 backdrop-blur-sm bg-white/90 shadow-lg">
-          <div className="flex items-center gap-3">
-            <MapPinned className="w-5 h-5 text-green-600 flex-shrink-0" />
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">En route to</p>
-              <p className="font-bold text-sm truncate" data-testid="text-destination-name">{currentPoint.name}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">Distance</p>
-              <p className="font-bold text-sm">2.4 km</p>
-            </div>
-          </div>
-          <div className="mt-2 h-1.5 bg-muted rounded-full overflow-hidden">
-            <motion.div
-              className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
-              initial={{ width: 0 }}
-              animate={{ width: `${simulatedProgress}%` }}
-              transition={{ duration: 0.3 }}
-              data-testid="progress-route"
-            />
-          </div>
-        </Card>
-      </div>
+      
 
       {/* Bottom Sheet */}
       <AnimatePresence>
@@ -321,6 +297,46 @@ export default function MapNavigation() {
             </button>
 
             <div className="p-4 space-y-4 max-h-[80vh] overflow-y-auto pb-6">
+              {/* En Route To Card */}
+              <Card className="p-3 bg-gradient-to-br from-blue-50 to-cyan-50 border-blue-200">
+                <div className="flex items-center gap-3 mb-2">
+                  <MapPinned className="w-5 h-5 text-green-600 flex-shrink-0" />
+                  <div className="flex-1">
+                    <p className="text-xs text-muted-foreground">En route to</p>
+                    <p className="font-bold text-sm truncate" data-testid="text-destination-name">{currentPoint.name}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Distance</p>
+                    <p className="font-bold text-sm">2.4 km</p>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                  <motion.div
+                    className="h-full bg-gradient-to-r from-green-500 to-emerald-500"
+                    initial={{ width: 0 }}
+                    animate={{ width: `${simulatedProgress}%` }}
+                    transition={{ duration: 0.3 }}
+                    data-testid="progress-route"
+                  />
+                </div>
+              </Card>
+
+              {/* I Reached Destination Button */}
+              {!isNearDestination && (
+                <Button
+                  className="w-full gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700"
+                  size="lg"
+                  onClick={() => {
+                    setSimulatedProgress(100);
+                    setIsNearDestination(true);
+                  }}
+                  data-testid="button-reached-destination"
+                >
+                  <MapPin className="w-5 h-5" />
+                  I Reached the Destination
+                </Button>
+              )}
+
               {/* Current Stop Details */}
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
@@ -375,15 +391,8 @@ export default function MapNavigation() {
                   <CheckCircle2 className="w-5 h-5" />
                   {completeStopMutation.isPending 
                     ? "Completing..." 
-                    : isNearDestination 
-                      ? "Complete Stop" 
-                      : "Arrive at Location First"}
+                    : "Complete Stop"}
                 </Button>
-                {!isNearDestination && (
-                  <p className="text-xs text-center text-muted-foreground mt-2">
-                    Navigate closer to the delivery point to complete this stop
-                  </p>
-                )}
               </div>
 
               {/* Next Stop Preview */}
