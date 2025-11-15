@@ -28,7 +28,7 @@ export default function Profile() {
     phoneNumber: "+91 9006488711",
     avatarUrl: prakharImage,
     level: "Pro Driver",
-    totalPoints: 2450,
+    totalPoints: 3000,
     currentStreak: 12,
     totalTrips: 145,
     joinedDate: "Jan 2024",

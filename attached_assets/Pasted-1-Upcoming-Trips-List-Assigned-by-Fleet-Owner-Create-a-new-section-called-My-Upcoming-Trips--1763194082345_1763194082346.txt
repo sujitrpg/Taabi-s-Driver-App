@@ -1,0 +1,111 @@
+1. Upcoming Trips List (Assigned by Fleet Owner)
+
+Create a new section called “My Upcoming Trips”.
+
+The trips will be pushed from the backend by the driver’s owner or fleet manager.
+The driver should simply see a list of upcoming trips in sequence, like:
+
+Trip 1 → Tomorrow, 7 AM
+
+Trip 2 → Day after tomorrow, 9 AM
+
+Each trip card should show:
+
+Start point (icon only)
+
+End point (icon only)
+
+Number of delivery points (e.g., 12 stops)
+
+Simple visual timeline
+
+Trip date & time
+
+Make it pictorial and extremely easy to understand.
+
+2. Trip Details → Delivery Points View
+
+When the driver clicks any trip, open a dedicated Trip Details screen.
+
+It must show:
+
+All delivery points in that trip
+
+Optimized in the correct order
+
+Shown mostly using icons, pictures, large numbers
+
+Minimal text
+
+Big tappable boxes for each delivery point
+
+Make the list feel like a story flow:
+Stop 1 → Stop 2 → Stop 3 → … (up to 10–20 stops)
+
+Each stop should show:
+
+A small picture or symbol of the destination type (warehouse, shop, factory, home delivery, etc.)
+
+Address in small text (optional)
+
+“Navigate” button
+
+3. Animated Map (Google Maps–Style Start Navigation)
+
+When the driver taps Start Trip, a new screen should appear that looks and behaves like Google Maps Navigation:
+
+A live moving map
+
+All delivery points visible as pins
+
+Pins appear in the optimized order
+
+A big arrow showing driver movement
+
+Turn-by-turn guidance style visuals
+
+Simple animations (e.g., bouncing pins, highlighted current stop)
+
+Driver should always see the next stop highlighted
+
+Think of this as “Google Maps for multi-stop trucking”, but simplified visually for drivers.
+
+4. Auto-Move to Next Delivery Point
+
+After reaching a stop, the app should automatically:
+
+Mark stop as completed
+
+Move to the next delivery point
+
+Update the route visually
+
+Show a small tick mark animation for completed stops
+
+Make it feel smooth and visual.
+
+5. Sample Data for Demo
+
+For the demo, please create two sample trips:
+
+Trip 1: 5–10 delivery points (within one city)
+
+Trip 2: 10–20 delivery points (dense, urban routing)
+
+Make sure each trip loads correctly, shows all stops, and flows visually like real-world navigation.
+
+✔️ Overall Experience We Want
+
+Very visual
+
+Very pictorial
+
+Minimal text
+
+Big icons, big buttons
+
+Maps feel animated, alive, and easy to follow
+
+Trip experience starts exactly like Google Maps navigation
+
+Driver should feel guided step-by-step without reading much
